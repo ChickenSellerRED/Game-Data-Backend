@@ -4,7 +4,7 @@ import fs from "fs"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
 import {ClearanceRecordsSchema,SkillUsesSchema } from "./db/Schema.js"
-import {Int32} from "mongodb";
+//import {Int32} from "mongodb";
 
 dotenv.config()
 
@@ -32,6 +32,9 @@ app.use(bodyParser.json())
 const port = 8080;
 app.get("/Hello",(req,res)=>{
     res.sendFile("hello.html",{root:'.'})
+})
+app.get("/Plot2",(req,res)=>{
+    res.sendFile("timeOfLevels.html",{root:'.'})
 })
 app.get('/getTimeOfLevels', async (req,res) =>{
     let timeArr = []

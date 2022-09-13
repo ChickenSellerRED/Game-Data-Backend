@@ -3,8 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="timeOfLevels.css">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+    <div id="container"></div>
+    <script>
+        window.onload= async function(){
 
+    
+        var clearanceRecords;
+        var boxPlotData = [];
+        var xLabel = [];
+        var server = "http://localhost:8080/getClearanceRecords"
+        await axios
+            .post(server)
+            .then(function (response) {
+                clearanceRecords = response.data;
+            });
+        var levelNums = clearanceRecords.length;
+        for(var i=0;i<levelNums;i++){
+            xLabel.push("level " + (i+1));
+        }
+        for(var i=0;i<levelNums;i++){
+            var thisLevel = [];
+            thisLevel.push(clearanceRecords[i].bot);
+            thisLevel.push(clearanceRecords[i].box_bot);
+            thisLevel.push(clearanceRecords[i].mid);
+            thisLevel.push(clearanceRecords[i].box_top);
+            thisLevel.push(clearanceRecords[i].top);
+            boxPlotData.push(thisLevel);
+        }
+        console.log(xLabel);
+        console.log(boxPlotData);
+        Highcharts.chart('container', {
+
+chart: {
+    type: 'boxplot'
+},
+
+title: {
+    text: 'Highcharts Box Plot Example'
+},
+
+legend: {
+    enabled: false
+},
+
+xAxis: {
+    categories: xLabel,
+    title: {
+        text: 'Experiment No.'
+    }
+},
+
+yAxis: {
+    title: {
+        text: 'Observations'
+    },
+    plotLines: [{
+        value: 932,
+        color: 'red',
+        width: 1,
+        label: {
+            text: 'Theoretical mean: 932',
+            align: 'center',
+            style: {
+                color: 'gray'
+            }
+        }
+    }]
+},
+
+series: [{
+    name: 'Observations',
+    data: boxPlotData,
+    tooltip: {
+        headerFormat: '<em>Experiment No {point.key}</em><br/>'
+    }
+}]
+
+});
+        }
+    </script>
 </body>
 </html>

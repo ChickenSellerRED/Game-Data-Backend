@@ -17,4 +17,4 @@ var SkillUsesSchema = mongoose.Schema({
 })
 
 
-export {ClearanceRecordsSchema}
+export {ClearanceRecordsSchema,SkillUsesSchema}
