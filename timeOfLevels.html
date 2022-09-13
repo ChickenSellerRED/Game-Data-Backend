@@ -13,6 +13,7 @@
 </head>
 <body>
     <div id="container"></div>
+    <div id="container1"></div>
     <script>
         window.onload= async function(){
 
@@ -21,11 +22,17 @@
         var boxPlotData = [];
         var xLabel = [];
         var server = "http://localhost:8080/getClearanceRecords"
+        var server1 = "http://localhost:8080/getSkillUses"
         await axios
             .post(server)
             .then(function (response) {
                 clearanceRecords = response.data;
             });
+        // await axios
+        //     .post(server1)
+        //     .then(function (response) {
+        //         getSkillUses = response.data;
+        //     });
         var levelNums = clearanceRecords.length;
         for(var i=0;i<levelNums;i++){
             xLabel.push("level " + (i+1));
@@ -89,7 +96,57 @@ series: [{
 }]
 
 });
+        
+Highcharts.chart('container1', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'Utilization of Skill sets'
+    },
+    subtitle: {
+        text: 'Source: ' +
+            '<a href="https://www.ssb.no/en/statbank/table/08940/" ' +
+            'target="_blank">SSB</a>'
+    },
+    xAxis: {
+        categories: [
+            'skill set 1',
+            'skill set 2',
+            'skill set 3',
+            'skill set 4',
+        ],
+        crosshair: true
+    },
+    yAxis: {
+        title: {
+            useHTML: true,
+            text: 'Skillsets'
         }
-    </script>
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+        }
+    },
+    series: [{
+        name: 'skill sets',
+        data: [1,2,3,4]
+
+    }]
+});
+    }
+</script>
+
+
 </body>
 </html>
