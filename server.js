@@ -49,15 +49,7 @@ app.get("/Hello",(req,res)=>{
 app.get("/Plot2",(req,res)=>{
     res.sendFile("timeOfLevels.html",{root:'.'})
 })
-app.get('/getTimeOfLevels', async (req,res) =>{
-    let timeArr = []
-    await fs.readFile('timeOfLevels.txt', 'utf8', function(err, data){
-        timeArr = data.split(',').map(x=>parseInt(x));
-        console.log(timeArr)
-        res.send(timeArr);
-    })
 
-});
 
 app.post('/timeOfLevels', async (req,res) => {
     console.log(req.body)
@@ -82,19 +74,23 @@ app.post('/timeOfLevels', async (req,res) => {
         "status":"accepted"
     })
 })
+let ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
+let SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
 
 app.post("/logClearanceRecord",async (req,res)=>{
     const level = req.body['level'];
     const status = req.body['status'];
     const time = req.body['time'];
     var record = new ClearanceRecord({level:level,status:status,time:time});
+    console.log("logClearanceRecord:")
+    console.log("level:",level)
+    console.log("status:",status)
+    console.log("time:",time)
     record.save();
 })
-
 app.post("/getClearanceRecords",async (req,res)=>{
     var ans = [];
     var records;
-    var ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
     await ClearanceRecord.find({status:"success"})
         .then(data=>{
             console.log("doc:")
@@ -137,9 +133,17 @@ app.post("/getClearanceRecords",async (req,res)=>{
     console.log(ans)
     res.send(ans);
 });
+app.post("/logSkillUses",async (req,res)=>{
+    const skillId = req.body['skillId'];
+    const uses = req.body['uses'];
+    var skillUse = new SkillUse({skillId:skillId,uses:uses});
+    console.log("logSkillUses:")
+    console.log("skillId:",skillId)
+    console.log("uses:",uses)
+    skillUse.save();
+})
 app.post("/getSkillUses",async (req,res)=>{
     var ans = [];
-    var SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
     var skillUsesRecords;
     await SkillUse.find({})
         .then(data=>{
@@ -164,6 +168,8 @@ app.post("/getSkillUses",async (req,res)=>{
     // console.log(ans);
     res.send(ans);
 })
+
+app.post("/set")
 app.listen(port, () => {
     console.log(`App running on PORT ${port}`);
 });
