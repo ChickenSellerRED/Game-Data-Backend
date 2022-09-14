@@ -12,7 +12,7 @@ var ClearanceRecordsSchema = mongoose.Schema({
     time:Number
 })
 var SkillUsesSchema = mongoose.Schema({
-    itemId:Number,
+    skillId:Number,
     uses:Number
 })
 

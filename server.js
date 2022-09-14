@@ -7,16 +7,29 @@ import {ClearanceRecordsSchema,SkillUsesSchema } from "./db/Schema.js"
 //import {Int32} from "mongodb";
 
 dotenv.config()
-
-console.log(process.env.MONGO_URI)
 mongoose.connect(process.env.MONGO_URI)
-var SuccessInLevelsSchema = mongoose.Schema({
-    level:Number,
-    status:String,
-    time:Number,
-})
+// var ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
+// for(var i=1;i<=4;i++){
+//     for(var j=0;j<20;j++){
+//         var levelRecord = new ClearanceRecord({
+//             level:i,
+//             time:Math.ceil(Math.random()*200) ,
+//             status:'success'
+//         })
+//         levelRecord.save();
+//     }
+// }
+
+// var SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
+// for(var i=0;i<5;i++){
+//     var skillUse = new SkillUse({
+//         skillId:i,
+//         uses:i*i+2
+//     });
+//     skillUse.save();
+// }
 let levelNum = 4;
-let itemNum = 4;
+let SkillNum = 4;
 
 // SuccessInLevel.find({status:"success"},function (err,doc){
 //     if(err){
@@ -93,14 +106,15 @@ app.post("/getClearanceRecords",async (req,res)=>{
     //
     console.log(records);
 
-    for(var  level=1;level<=4;level++){
+    for(var  level=1;level<=levelNum;level++){
 
         var timeInLevel = records.filter((e)=>e.level === level);
-        console.log("level:",level);
-        console.log("timeInLevel:",timeInLevel)
         timeInLevel = timeInLevel.map((e)=>e.time);
-        timeInLevel.sort();
+        timeInLevel.sort((a,b)=>{if(a>b)return 1;if(a<b)return -1;return 0;});
         var  n = timeInLevel.length;
+        console.log("level:",level);
+        console.log("n:",n);
+        console.log("timeInLevel:",timeInLevel)
         if(n == 0)
             ans.push({
                 top:0,
@@ -126,7 +140,29 @@ app.post("/getClearanceRecords",async (req,res)=>{
 app.post("/getSkillUses",async (req,res)=>{
     var ans = [];
     var SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
-    SkillUse.find({});
+    var skillUsesRecords;
+    await SkillUse.find({})
+        .then(data=>{
+            skillUsesRecords = data;
+            // console.log("data:")
+            // console.log(data);
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    for(var skillId=0;skillId<SkillNum;skillId++){
+        var thisUsesCnt = 0;
+        var thisSkillUses = skillUsesRecords.filter((e)=>e.skillId==skillId)
+        console.log(thisSkillUses)
+        thisUsesCnt = thisSkillUses.reduce( (a,b)=>
+             a+b.uses,
+            0
+        )
+        ans.push(thisUsesCnt);
+    }
+    // console.log("ans:");
+    // console.log(ans);
+    res.send(ans);
 })
 app.listen(port, () => {
     console.log(`App running on PORT ${port}`);

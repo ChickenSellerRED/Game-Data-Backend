@@ -19,6 +19,7 @@
 
     
         var clearanceRecords;
+        var skillUses;
         var boxPlotData = [];
         var xLabel = [];
         var server = "http://localhost:8080/getClearanceRecords"
@@ -28,11 +29,11 @@
             .then(function (response) {
                 clearanceRecords = response.data;
             });
-        // await axios
-        //     .post(server1)
-        //     .then(function (response) {
-        //         getSkillUses = response.data;
-        //     });
+        await axios
+            .post(server1)
+            .then(function (response) {
+                skillUses = response.data;
+            });
         var levelNums = clearanceRecords.length;
         for(var i=0;i<levelNums;i++){
             xLabel.push("level " + (i+1));
@@ -140,7 +141,7 @@ Highcharts.chart('container1', {
     },
     series: [{
         name: 'skill sets',
-        data: [1,2,3,4]
+        data: skillUses
 
     }]
 });
