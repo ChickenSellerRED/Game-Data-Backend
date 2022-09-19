@@ -26,12 +26,13 @@
         var levelSkills;
         var boxPlotData = [];
         var xLabel = [];
-        var server = "http://localhost:8080/getClearanceRecords"
-        var server1 = "http://localhost:8080/getSkillUses"
-        var server2 = "http://localhost:8080/getClearancePeople"
-        var server3 = "http://localhost:8080/getItemsInteract"
+        var server = ""
+        var server0 = server + "/getClearanceRecords"
+        var server1 = server + "getSkillUses"
+        var server2 = server + "getClearancePeople"
+        var server3 = server + "getItemsInteract"
         await axios
-            .post(server)
+            .post(server0)
             .then(function (response) {
                 clearanceRecords = response.data;
             });
