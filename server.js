@@ -3,11 +3,16 @@ import bodyParser from 'body-parser'
 import fs from "fs"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
-import {ClearanceRecordsSchema,SkillUsesSchema } from "./db/Schema.js"
+import {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema } from "./db/Schema.js"
 //import {Int32} from "mongodb";
 
 dotenv.config()
 mongoose.connect(process.env.MONGO_URI)
+
+let ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
+let SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
+let ItemsInteraction = mongoose.model('ItemsInteraction',ItemInteractionsSchema,'ItemInteractions');
+
 // var ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
 // for(var i=1;i<=4;i++){
 //     for(var j=0;j<20;j++){
@@ -28,9 +33,26 @@ mongoose.connect(process.env.MONGO_URI)
 //     });
 //     skillUse.save();
 // }
+
 let levelNum = 4;
 let SkillNum = 4;
 let ItemNum = 4;
+// for(var i=1;i<=ItemNum;i++){
+//     for(var j=0;j<i*i;j++){
+//         var temItem = new ItemsInteraction({
+//             itemId:i,
+//             status:'obtained',
+//             count:1
+//         })
+//         temItem.save();
+//         var temItem = new ItemsInteraction({
+//             itemId:i,
+//             status:'used',
+//             count:1
+//         })
+//         temItem.save();
+//     }
+// }
 
 // SuccessInLevel.find({status:"success"},function (err,doc){
 //     if(err){
@@ -75,9 +97,6 @@ app.post('/timeOfLevels', async (req,res) => {
         "status":"accepted"
     })
 })
-let ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
-let SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
-let ItemsInteraction = mongoose.model('ItemsInteraction',SkillUsesSchema,'ItemInteractions');
 
 app.post("/logClearanceRecord",async (req,res)=>{
     const level = req.body['level'];
@@ -182,7 +201,7 @@ app.post("/getClearancePeople",async (req,res)=>{
     for(var level=1;level<=levelNum;level++){
         var timeInLevel = records.filter((e)=>e.level === level);
         var len = timeInLevel.length;
-        ans.add(len);
+        ans.push(len);
     }
     res.send(ans);
 })
@@ -207,17 +226,22 @@ app.post("/getItemsInteract",async (req,res)=>{
         .catch(err=>{
             console.log("err:",err)
         })
-    for(var itemId=1;itemId<ItemNum;itemId++){
+    console.log(records)
+
+    for(var itemId=1;itemId<=ItemNum;itemId++){
         var thisItem = records.filter((e)=>e.itemId === itemId);
-        var obtained = thisItem.filter((e=>status === 'obtained')).length;
-        var used = thisItem.filter((e=>status === 'used')).length;
-        ans.add({
+        var obtained = thisItem.filter((e=>e.status === 'obtained')).length;
+        var used = thisItem.filter((e=>e.status === 'used')).length;
+        ans.push({
             obtained:obtained,
             used:used
         })
     }
+    console.log("ans:")
+    console.log(ans);
     res.send(ans);
 })
+
 
 app.post("/set")
 app.listen(port, () => {

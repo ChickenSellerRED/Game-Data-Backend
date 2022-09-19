@@ -12,10 +12,10 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-    <div id="container"></div>
-    <div id="container1"></div>
-    <div id="container2"></div>
-    <div id="container4"></div>
+    <div id="Plot2"></div>
+    <div id="Plot4"></div>
+    <div id="Plot1"></div>
+    <div id="Plot3"></div>
     <script>
         window.onload= async function(){
 
@@ -50,6 +50,8 @@
             .then(function (response) {
                 levelSkills = response.data;
             });
+        console.log("obtains:")
+        console.log(levelSkills.map((e)=>e.obtained))
         var levelNums = clearanceRecords.length;
         for(var i=0;i<levelNums;i++){
             xLabel.push("level " + (i+1));
@@ -72,7 +74,7 @@
         console.log(xLabel);
         console.log(boxPlotData);
         console.log(levelSkills)
-        Highcharts.chart('container', {
+        Highcharts.chart('Plot2', {
 
 chart: {
     type: 'boxplot'
@@ -121,7 +123,7 @@ series: [{
 
 });
         
-Highcharts.chart('container1', {
+Highcharts.chart('Plot4', {
     chart: {
         type: 'column'
     },
@@ -169,7 +171,7 @@ Highcharts.chart('container1', {
     }]
 });
 
-Highcharts.chart('container2', {
+Highcharts.chart('Plot1', {
     chart: {
         type: 'column'
     },
@@ -217,7 +219,7 @@ Highcharts.chart('container2', {
     }]
 });
 
-Highcharts.chart('container3', {
+Highcharts.chart('Plot3', {
     chart: {
         type: 'column'
     },
@@ -260,10 +262,12 @@ Highcharts.chart('container3', {
     },
     series: [{
         name: '# of skill sets obtain',
-        data: levelSkills.obtained
+        data:[1,4,9,16]
+        // data: levelSkills.map((e)=>e.obtained)
     },{
         name: '# of skill sets used',
-        data: levelSkills.used
+        data:[1,4,9,16]
+        // data: levelSkills.map((e)=>e.used)
     }]
 });
 
