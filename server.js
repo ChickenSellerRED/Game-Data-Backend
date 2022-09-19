@@ -30,6 +30,7 @@ mongoose.connect(process.env.MONGO_URI)
 // }
 let levelNum = 4;
 let SkillNum = 4;
+let ItemNum = 4;
 
 // SuccessInLevel.find({status:"success"},function (err,doc){
 //     if(err){
@@ -76,6 +77,7 @@ app.post('/timeOfLevels', async (req,res) => {
 })
 let ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
 let SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
+let ItemsInteraction = mongoose.model('ItemsInteraction',SkillUsesSchema,'ItemInteractions');
 
 app.post("/logClearanceRecord",async (req,res)=>{
     const level = req.body['level'];
@@ -99,7 +101,6 @@ app.post("/getClearanceRecords",async (req,res)=>{
         .catch(err=>{
             console.log("err:",err)
         })
-    //
     console.log(records);
 
     for(var  level=1;level<=levelNum;level++){
@@ -166,6 +167,55 @@ app.post("/getSkillUses",async (req,res)=>{
     }
     // console.log("ans:");
     // console.log(ans);
+    res.send(ans);
+})
+app.post("/getClearancePeople",async (req,res)=>{
+    var ans = [];
+    var records;
+    await ClearanceRecord.find({status:"success"})
+        .then(data=>{
+            records = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    for(var level=1;level<=levelNum;level++){
+        var timeInLevel = records.filter((e)=>e.level === level);
+        var len = timeInLevel.length;
+        ans.add(len);
+    }
+    res.send(ans);
+})
+app.post("/logItemsInteract",async (req,res)=>{
+    const itemId = req.body['itemId'];
+    const status = req.body['status'];
+    const count = req.body['count'];
+    var ItemInteraction = new ItemInteraction({itemId:itemId,status:status,count:count});
+    console.log("logItemsInteract:")
+    console.log("itemId:",itemId)
+    console.log("status:",status)
+    console.log("count:",count)
+    ItemInteraction.save();
+})
+app.post("/getItemsInteract",async (req,res)=>{
+    var ans = [];
+    var records;
+    await ItemsInteraction.find({})
+        .then(data=>{
+            records = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    for(var itemId=1;itemId<ItemNum;itemId++){
+        var thisItem = records.filter((e)=>e.itemId === itemId);
+        var obtained = thisItem.filter((e=>status === 'obtained')).length;
+        var used = thisItem.filter((e=>status === 'used')).length;
+        ans.add({
+            obtained:obtained,
+            used:used
+        })
+    }
     res.send(ans);
 })
 

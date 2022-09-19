@@ -15,6 +15,11 @@ var SkillUsesSchema = mongoose.Schema({
     skillId:Number,
     uses:Number
 })
+var ItemInteractions = mongoose.Schema({
+    ItemId:Number,
+    status:String,
+    count:Number
+})
 
 
 export {ClearanceRecordsSchema,SkillUsesSchema}
