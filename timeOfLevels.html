@@ -14,16 +14,22 @@
 <body>
     <div id="container"></div>
     <div id="container1"></div>
+    <div id="container2"></div>
+    <div id="container4"></div>
     <script>
         window.onload= async function(){
 
     
         var clearanceRecords;
         var skillUses;
+        var numberPeople;
+        var levelSkills;
         var boxPlotData = [];
         var xLabel = [];
         var server = "http://localhost:8080/getClearanceRecords"
         var server1 = "http://localhost:8080/getSkillUses"
+        var server2 = "http://localhost:8080/getClearancePeople"
+        var server3 = "http://localhost:8080/getItemsInteract"
         await axios
             .post(server)
             .then(function (response) {
@@ -33,6 +39,16 @@
             .post(server1)
             .then(function (response) {
                 skillUses = response.data;
+            });
+        await axios
+            .post(server2)
+            .then(function (response) {
+                numberPeople = response.data;
+            });
+        await axios
+            .post(server3)
+            .then(function (response) {
+                levelSkills = response.data;
             });
         var levelNums = clearanceRecords.length;
         for(var i=0;i<levelNums;i++){
@@ -47,8 +63,15 @@
             thisLevel.push(clearanceRecords[i].top);
             boxPlotData.push(thisLevel);
         }
+        for(var i=0;i<levelNums;i++){
+            var thisLevel = [];
+            thisLevel.push(clearanceRecords[i].obtained);
+            thisLevel.push(clearanceRecords[i].used);
+            levelSkills.push(thisLevel);
+        }
         console.log(xLabel);
         console.log(boxPlotData);
+        console.log(levelSkills)
         Highcharts.chart('container', {
 
 chart: {
@@ -145,6 +168,105 @@ Highcharts.chart('container1', {
 
     }]
 });
+
+Highcharts.chart('container2', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: '# of People'
+    },
+    subtitle: {
+        text: 'Source: ' +
+            '<a href="https://www.ssb.no/en/statbank/table/08940/" ' +
+            'target="_blank">SSB</a>'
+    },
+    xAxis: {
+        categories: [
+            'level 1',
+            'level 2',
+            'level 3',
+            'level 4',
+        ],
+        crosshair: true
+    },
+    yAxis: {
+        title: {
+            useHTML: true,
+            text: 'People'
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+        }
+    },
+    series: [{
+        name: '# of People',
+        data: numberPeople
+
+    }]
+});
+
+Highcharts.chart('container3', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: '# of Skillsets Obtained and Used'
+    },
+    subtitle: {
+        text: 'Source: ' +
+            '<a href="https://www.ssb.no/en/statbank/table/08940/" ' +
+            'target="_blank">SSB</a>'
+    },
+    xAxis: {
+        categories: [
+            'level 1',
+            'level 2',
+            'level 3',
+            'level 4',
+        ],
+        crosshair: true
+    },
+    yAxis: {
+        title: {
+            useHTML: true,
+            text: 'Skill sets'
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+        }
+    },
+    series: [{
+        name: '# of skill sets obtain',
+        data: levelSkills.obtained
+    },{
+        name: '# of skill sets used',
+        data: levelSkills.used
+    }]
+});
+
     }
 </script>
 
