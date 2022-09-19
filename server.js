@@ -52,7 +52,7 @@ app.get("/Plot2",(req,res)=>{
 
 
 app.post('/timeOfLevels', async (req,res) => {
-    console.log(req.body)
+    console.log(req.body);
     const timeCost = req.body['timeOfLevels'];
     console.log(timeCost);
     var timeArr = []
