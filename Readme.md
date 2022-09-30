@@ -21,7 +21,7 @@ logItemInteract:上传装备的获取/使用
 ```json
 {
  "itemId":装备id
- "status":“obtained”或者“used”
+ "status":"obtained"或者"used"
  "count":使用次数
 }
 ```
