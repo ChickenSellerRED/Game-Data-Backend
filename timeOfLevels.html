@@ -19,10 +19,13 @@
     <script>
         window.onload= async function(){
 
-    
+        var clearnceRecordsXlabel;
         var clearanceRecords;
+        var skillUsesXlabel;
         var skillUses;
+        var numberPeopleXlable
         var numberPeople;
+        var levelSkillsXlable;
         var levelSkills;
         var boxPlotData = [];
         var xLabel = [];
@@ -34,29 +37,30 @@
         await axios
             .post(server0)
             .then(function (response) {
-                clearanceRecords = response.data;
+                clearnceRecordsXlabel = response.data.xLabel;
+                clearanceRecords = response.data.data;
             });
         await axios
             .post(server1)
             .then(function (response) {
-                skillUses = response.data;
+                skillUsesXlabel = response.data.xLabel;
+                skillUses = response.data.data;
             });
         await axios
             .post(server2)
             .then(function (response) {
-                numberPeople = response.data;
+                numberPeopleXlable = response.data.xLabel;
+                numberPeople = response.data.data;
             });
         await axios
             .post(server3)
             .then(function (response) {
-                levelSkills = response.data;
+                levelSkillsXlable = response.data.xLabel;
+                levelSkills = response.data.data;
             });
         console.log("obtains:")
         console.log(levelSkills.map((e)=>e.obtained))
         var levelNums = clearanceRecords.length;
-        for(var i=0;i<levelNums;i++){
-            xLabel.push("level " + (i+1));
-        }
         for(var i=0;i<levelNums;i++){
             var thisLevel = [];
             thisLevel.push(clearanceRecords[i].bot);
@@ -82,7 +86,7 @@ chart: {
 },
 
 title: {
-    text: 'Highcharts Box Plot Example'
+    text: 'Time Range per Level'
 },
 
 legend: {
@@ -90,7 +94,7 @@ legend: {
 },
 
 xAxis: {
-    categories: xLabel,
+    categories: clearnceRecordsXlabel,
     title: {
         text: 'Experiment No.'
     }
@@ -131,18 +135,8 @@ Highcharts.chart('Plot4', {
     title: {
         text: 'Utilization of Skill sets'
     },
-    subtitle: {
-        text: 'Source: ' +
-            '<a href="https://www.ssb.no/en/statbank/table/08940/" ' +
-            'target="_blank">SSB</a>'
-    },
     xAxis: {
-        categories: [
-            'skill set 1',
-            'skill set 2',
-            'skill set 3',
-            'skill set 4',
-        ],
+        categories: skillUsesXlabel,
         crosshair: true
     },
     yAxis: {
@@ -177,20 +171,10 @@ Highcharts.chart('Plot1', {
         type: 'column'
     },
     title: {
-        text: '# of People'
-    },
-    subtitle: {
-        text: 'Source: ' +
-            '<a href="https://www.ssb.no/en/statbank/table/08940/" ' +
-            'target="_blank">SSB</a>'
+        text: 'The Number of People'
     },
     xAxis: {
-        categories: [
-            'level 1',
-            'level 2',
-            'level 3',
-            'level 4',
-        ],
+        categories: numberPeopleXlable,
         crosshair: true
     },
     yAxis: {
@@ -214,7 +198,7 @@ Highcharts.chart('Plot1', {
         }
     },
     series: [{
-        name: '# of People',
+        name: 'the Number of People',
         data: numberPeople
 
     }]
@@ -225,20 +209,10 @@ Highcharts.chart('Plot3', {
         type: 'column'
     },
     title: {
-        text: '# of Skillsets Obtained and Used'
-    },
-    subtitle: {
-        text: 'Source: ' +
-            '<a href="https://www.ssb.no/en/statbank/table/08940/" ' +
-            'target="_blank">SSB</a>'
+        text: 'The Number of Skillsets Obtained and Used'
     },
     xAxis: {
-        categories: [
-            'level 1',
-            'level 2',
-            'level 3',
-            'level 4',
-        ],
+        categories: levelSkillsXlable,
         crosshair: true
     },
     yAxis: {
@@ -262,11 +236,11 @@ Highcharts.chart('Plot3', {
         }
     },
     series: [{
-        name: '# of skill sets obtain',
+        name: 'Obtain',
         // data:[1,4,9,16]
         data: levelSkills.map((e)=>e.obtained)
     },{
-        name: '# of skill sets used',
+        name: 'Used',
         // data:[1,4,9,16]
         data: levelSkills.map((e)=>e.used)
     }]
