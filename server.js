@@ -108,9 +108,14 @@ app.post("/logClearanceRecord",async (req,res)=>{
     console.log("status:",status)
     console.log("time:",time)
     record.save();
+    res.send("success!")
 })
 app.post("/getClearanceRecords",async (req,res)=>{
-    var ans = [];
+    var ans = {
+        xLabel:[],
+        data:[],
+    };
+
     var records;
     await ClearanceRecord.find({status:"success"})
         .then(data=>{
@@ -121,37 +126,36 @@ app.post("/getClearanceRecords",async (req,res)=>{
             console.log("err:",err)
         })
     console.log(records);
-
-    for(var  level=1;level<=levelNum;level++){
-
-        var timeInLevel = records.filter((e)=>e.level === level);
-        timeInLevel = timeInLevel.map((e)=>e.time);
-        timeInLevel.sort((a,b)=>{if(a>b)return 1;if(a<b)return -1;return 0;});
-        var  n = timeInLevel.length;
-        console.log("level:",level);
-        console.log("n:",n);
-        console.log("timeInLevel:",timeInLevel)
-        if(n == 0)
-            ans.push({
-                top:0,
-                box_top:0,
-                mid:0,
-                box_bot:0,
-                bot:0
-            })
-        else{
-            ans.push({
-                top:timeInLevel[n-1],
-                box_top:timeInLevel[Math.floor(n*3/4)],
-                mid:timeInLevel[Math.floor(n/2)],
-                box_bot:timeInLevel[Math.floor(n/4)],
-                bot:timeInLevel[0]
-            })
-        }
-
-    }
-    console.log(ans)
+    // record.groupBy()
+    var map = new Map();
+    var sortLevel = [];
+    records.forEach((e)=>{
+        var tem = (map.get(e.level)||[]);
+        tem.push(e.time);
+        map.set(e.level,tem);
+        if(!sortLevel.includes(e.level))
+            sortLevel.push(e.level);
+    })
+    map.forEach((v,k)=>{
+        v.sort((a,b)=>{if(a>b)return 1;if(a<b)return -1;return 0;})
+        var n = v.length;
+        map.set(k,{
+            top:v[n-1],
+            box_top:v[Math.floor(n*3/4)],
+            mid:v[Math.floor(n/2)],
+            box_bot:v[Math.floor(n/4)],
+            bot:v[0]
+        })
+    })
+    sortLevel.sort((a,b)=>a-b);
+    // var mapAsc = new Map([...map.entries()].sort());
+    sortLevel.forEach((e)=>{
+        ans.xLabel.push("level "+e);
+        ans.data.push(map.get(e));
+    })
+    console.log(ans);
     res.send(ans);
+
 });
 app.post("/logSkillUses",async (req,res)=>{
     const skillId = req.body['skillId'];
@@ -161,35 +165,42 @@ app.post("/logSkillUses",async (req,res)=>{
     console.log("skillId:",skillId)
     console.log("uses:",uses)
     skillUse.save();
+    res.send("success!")
 })
 app.post("/getSkillUses",async (req,res)=>{
-    var ans = [];
+    var ans = {
+        xLabel:[],
+        data:[]
+    };
     var skillUsesRecords;
     await SkillUse.find({})
         .then(data=>{
             skillUsesRecords = data;
-            // console.log("data:")
-            // console.log(data);
         })
         .catch(err=>{
             console.log("err:",err)
         })
-    for(var skillId=0;skillId<SkillNum;skillId++){
-        var thisUsesCnt = 0;
-        var thisSkillUses = skillUsesRecords.filter((e)=>e.skillId==skillId)
-        console.log(thisSkillUses)
-        thisUsesCnt = thisSkillUses.reduce( (a,b)=>
-             a+b.uses,
-            0
-        )
-        ans.push(thisUsesCnt);
-    }
-    // console.log("ans:");
-    // console.log(ans);
+    var map = new Map();
+    var sortSkill = [];
+    skillUsesRecords.forEach((e)=>{
+        map.set(e.skillId,(map.get(e.skillId)||0)+e.uses);
+        if(!sortSkill.includes(e.skillId))
+            sortSkill.push(e.skillId);
+    })
+    // var mapAsc = new Map([...map.entries()].sort());
+    sortSkill.forEach((e)=>{
+        ans.xLabel.push('skill '+ e);
+        ans.data.push(map.get(e));
+    })
+    console.log('skill uses:')
+    console.log('ans')
     res.send(ans);
 })
 app.post("/getClearancePeople",async (req,res)=>{
-    var ans = [];
+    var ans = {
+        xLabel: [],
+        data: []
+    };
     var records;
     await ClearanceRecord.find({status:"success"})
         .then(data=>{
@@ -198,26 +209,40 @@ app.post("/getClearancePeople",async (req,res)=>{
         .catch(err=>{
             console.log("err:",err)
         })
-    for(var level=1;level<=levelNum;level++){
-        var timeInLevel = records.filter((e)=>e.level === level);
-        var len = timeInLevel.length;
-        ans.push(len);
-    }
-    res.send(ans);
+    var map = new Map();
+    var sortLevel = [];
+    records.forEach((e)=>{
+        map.set(e.level,(map.get(e.level)||0)+1);
+        if(!sortLevel.includes(e.level))
+            sortLevel.push(e.level)
+    })
+    sortLevel.sort((a,b)=>a-b);
+    // var mapAsc = new Map([...map.entries()].sort());
+    sortLevel.forEach((e) => {
+        ans.xLabel.push('level ' + e)
+        ans.data.push(map.get(e));
+    })
+    console.log('Clearance People:')
+    console.log(ans)
+    res.send(ans)
 })
 app.post("/logItemsInteract",async (req,res)=>{
     const itemId = req.body['itemId'];
     const status = req.body['status'];
     const count = req.body['count'];
-    var ItemInteraction = new ItemInteraction({itemId:itemId,status:status,count:count});
+    var ItemInteraction = new ItemsInteraction({itemId:itemId,status:status,count:count});
     console.log("logItemsInteract:")
     console.log("itemId:",itemId)
     console.log("status:",status)
     console.log("count:",count)
     ItemInteraction.save();
+    res.send("success!")
 })
 app.post("/getItemsInteract",async (req,res)=>{
-    var ans = [];
+    var ans = {
+        xLabel:[],
+        data:[]
+    };
     var records;
     await ItemsInteraction.find({})
         .then(data=>{
@@ -226,24 +251,36 @@ app.post("/getItemsInteract",async (req,res)=>{
         .catch(err=>{
             console.log("err:",err)
         })
-    console.log(records)
-
-    for(var itemId=1;itemId<=ItemNum;itemId++){
-        var thisItem = records.filter((e)=>e.itemId === itemId);
-        var obtained = thisItem.filter((e=>e.status === 'obtained')).length;
-        var used = thisItem.filter((e=>e.status === 'used')).length;
-        ans.push({
-            obtained:obtained,
-            used:used
+    var mapObtained = new Map();
+    var mapUsed = new Map();
+    var sortIds = [];
+    records.forEach((e)=>{
+        if(e.status === 'obtained'){
+            mapObtained.set(e.itemId,(mapObtained.get(e.itemId)||0)+e.count);
+            if(!sortIds.includes(e.itemId))
+                sortIds.push(e.itemId);
+            console.log('mapObtain:')
+            console.log(e.count)
+        }else if(e.status === 'used'){
+            mapUsed.set(e.itemId,(mapUsed.get(e.itemId)||0)+e.count);
+            console.log('used:')
+            console.log(e.count)
+        }
+    })
+    sortIds.sort((a,b)=>a-b);
+    // var mapObtainedAsc = new Map([...mapObtained.entries()],sort());
+    sortIds.forEach((e)=>{
+        ans.xLabel.push('item ' + e);
+        ans.data.push({
+            obtained:mapObtained.get(e),
+            used:(mapUsed.get(e)||0)
         })
-    }
-    console.log("ans:")
+    })
+    console.log('Item Interaction:')
     console.log(ans);
     res.send(ans);
 })
 
-
-app.post("/set")
 app.listen(port, () => {
     console.log(`App running on PORT ${port}`);
 });
