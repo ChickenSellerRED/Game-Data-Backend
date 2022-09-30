@@ -157,6 +157,54 @@ app.post("/getClearanceRecords",async (req,res)=>{
     res.send(ans);
 
 });
+app.post("/getFailClearanceRecords",async (req,res)=>{
+    var ans = {
+        xLabel:[],
+        data:[],
+    };
+
+    var records;
+    await ClearanceRecord.find({status:"fail"})
+        .then(data=>{
+            console.log("doc:")
+            records = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    console.log(records);
+    // record.groupBy()
+    var map = new Map();
+    var sortLevel = [];
+    records.forEach((e)=>{
+        var tem = (map.get(e.level)||[]);
+        tem.push(e.time);
+        map.set(e.level,tem);
+        if(!sortLevel.includes(e.level))
+            sortLevel.push(e.level);
+    })
+    map.forEach((v,k)=>{
+        v.sort((a,b)=>{if(a>b)return 1;if(a<b)return -1;return 0;})
+        var n = v.length;
+        map.set(k,{
+            top:v[n-1],
+            box_top:v[Math.floor(n*3/4)],
+            mid:v[Math.floor(n/2)],
+            box_bot:v[Math.floor(n/4)],
+            bot:v[0]
+        })
+    })
+    sortLevel.sort((a,b)=>a-b);
+    // var mapAsc = new Map([...map.entries()].sort());
+    sortLevel.forEach((e)=>{
+        ans.xLabel.push("level "+e);
+        ans.data.push(map.get(e));
+    })
+    console.log(ans);
+    res.send(ans);
+
+});
+
 app.post("/logSkillUses",async (req,res)=>{
     const skillId = req.body['skillId'];
     const uses = req.body['uses'];
@@ -278,6 +326,27 @@ app.post("/getItemsInteract",async (req,res)=>{
     })
     console.log('Item Interaction:')
     console.log(ans);
+    res.send(ans);
+})
+app.post("/getSuccessAndFail",async (req,res)=>{
+    var ans = {
+        success:0,
+        fail:0
+    }
+    var records;
+    await ClearanceRecord.find({status:"success"})
+        .then(data=>{
+            console.log("doc:")
+            records = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    records.forEach((e)=>{
+        if(e.status==='success')
+            ans.success++;
+        else ans.fail++;
+    })
     res.send(ans);
 })
 
