@@ -16,6 +16,8 @@
     <div id="Plot4"></div>
     <div id="Plot1"></div>
     <div id="Plot3"></div>
+    <div id="Plot5"></div>
+    <div id="Plot6"></div>
     <script>
         window.onload= async function(){
 
@@ -23,10 +25,14 @@
         var clearanceRecords;
         var skillUsesXlabel;
         var skillUses;
-        var numberPeopleXlable
+        var numberPeopleXlable;
         var numberPeople;
         var levelSkillsXlable;
         var levelSkills;
+        var HPofEnemyXlable;
+        var HPofEnemy;
+        var BallHittenXlable;
+        var BallHitten;
         var boxPlotData = [];
         var xLabel = [];
         var server = ""
@@ -34,6 +40,8 @@
         var server1 = server + "getSkillUses"
         var server2 = server + "getClearancePeople"
         var server3 = server + "getItemsInteract"
+        var server4 = server + "getHpofEnemys"
+        // var server5 = server + "getBallHitten"
         await axios
             .post(server0)
             .then(function (response) {
@@ -58,8 +66,23 @@
                 levelSkillsXlable = response.data.xLabel;
                 levelSkills = response.data.data;
             });
-        console.log("obtains:")
-        console.log(levelSkills.map((e)=>e.obtained))
+        // console.log("obtains:")
+        // console.log(levelSkills.map((e)=>e.obtained))
+        await axios
+            .post(server4)
+            .then(function (response) {
+                HPofEnemyXlable = response.data.xLabel;
+                HPofEnemy = response.data.data;
+            });
+        console.log("EnemyID:")
+        console.log(HPofEnemyXlable)
+        // await axios
+        //     .post(server5)
+        //     .then(function (response) {
+        //         BallHittenXlable = response.data.xLabel;
+        //         BallHitten = response.data.data;
+        //     });
+        
         var levelNums = clearanceRecords.length;
         for(var i=0;i<levelNums;i++){
             var thisLevel = [];
@@ -79,6 +102,7 @@
         console.log(xLabel);
         console.log(boxPlotData);
         console.log(levelSkills)
+
         Highcharts.chart('Plot2', {
 
 chart: {
@@ -96,26 +120,14 @@ legend: {
 xAxis: {
     categories: clearnceRecordsXlabel,
     title: {
-        text: 'Experiment No.'
+        text: 'Level'
     }
 },
 
 yAxis: {
     title: {
-        text: 'Observations'
+        text: 'Time'
     },
-    plotLines: [{
-        value: 932,
-        color: 'red',
-        width: 1,
-        label: {
-            text: 'Theoretical mean: 932',
-            align: 'center',
-            style: {
-                color: 'gray'
-            }
-        }
-    }]
 },
 
 series: [{
@@ -133,7 +145,7 @@ Highcharts.chart('Plot4', {
         type: 'column'
     },
     title: {
-        text: 'Utilization of Skill sets'
+        text: 'Utilization of Gears'
     },
     xAxis: {
         categories: skillUsesXlabel,
@@ -142,7 +154,7 @@ Highcharts.chart('Plot4', {
     yAxis: {
         title: {
             useHTML: true,
-            text: 'Skillsets'
+            text: 'The Number of Utilization'
         }
     },
     tooltip: {
@@ -160,7 +172,7 @@ Highcharts.chart('Plot4', {
         }
     },
     series: [{
-        name: 'skill sets',
+        name: 'Gears',
         data: skillUses
 
     }]
@@ -180,7 +192,7 @@ Highcharts.chart('Plot1', {
     yAxis: {
         title: {
             useHTML: true,
-            text: 'People'
+            text: 'The Number of People'
         }
     },
     tooltip: {
@@ -198,9 +210,13 @@ Highcharts.chart('Plot1', {
         }
     },
     series: [{
-        name: 'the Number of People',
-        data: numberPeople
-
+        name: 'Entered',
+        // data:[1,4,9,16]
+        data: numberPeople.map((e)=>e.entered)
+    },{
+        name: 'Success',
+        // data:[1,4,9,16]
+        data: numberPeople.map((e)=>e.success)
     }]
 });
 
@@ -218,7 +234,7 @@ Highcharts.chart('Plot3', {
     yAxis: {
         title: {
             useHTML: true,
-            text: 'Skill sets'
+            text: 'The Number of Gears'
         }
     },
     tooltip: {
@@ -246,7 +262,83 @@ Highcharts.chart('Plot3', {
     }]
 });
 
-    }
+Highcharts.chart('Plot5', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'HP versus the Enemy'
+    },
+    xAxis: {
+        categories: HPofEnemyXlable,
+        crosshair: true
+    },
+    yAxis: {
+        title: {
+            useHTML: true,
+            text: 'HP'
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+        }
+    },
+    series: [{
+        name: 'HP versus Enemy',
+        data: HPofEnemy
+
+    }]
+});
+
+// Highcharts.chart('Plot6', {
+//     chart: {
+//         plotBackgroundColor: null,
+//         plotBorderWidth: null,
+//         plotShadow: false,
+//         type: 'pie'
+//     },
+//     title: {
+//         text: 'The Times of Each Type of Balls Hitten'
+//     },
+//     tooltip: {
+//         pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+//     },
+//     accessibility: {
+//         point: {
+//             valueSuffix: '%'
+//         }
+//     },
+//     plotOptions: {
+//         pie: {
+//             allowPointSelect: true,
+//             cursor: 'pointer',
+//             dataLabels: {
+//                 enabled: true,
+//                 format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+//             }
+//         }
+//     },
+//     series: [{
+//         name: 'Type of Balls',
+//         colorByPoint: true,
+//         data: [{
+//             name: BallHittenXlable,
+//             y: BallHitten,
+//         }]
+//     }]
+// });
+        }
+
 </script>
 
 

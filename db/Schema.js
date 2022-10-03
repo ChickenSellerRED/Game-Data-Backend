@@ -20,6 +20,16 @@ var ItemInteractionsSchema = mongoose.Schema({
     status:String,
     count:Number
 })
+var HpofEnemySchema = mongoose.Schema({
+    userId:String,
+    enemyId:Number,
+    hp:Number
+})
+
+var PeopleEnterSuccessSchema = mongoose.Schema({
+    level:Number,
+    status:String,//enter/complete
+})
 
 
-export {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema}
+export {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema,HpofEnemySchema}
