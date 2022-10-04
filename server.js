@@ -3,7 +3,8 @@ import bodyParser from 'body-parser'
 import fs from "fs"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
-import {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema } from "./db/Schema.js"
+import {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema,HpofEnemySchema,PeopleEnterSuccessSchema} from "./db/Schema.js"
+import { cursorTo } from 'readline'
 //import {Int32} from "mongodb";
 
 dotenv.config()
@@ -12,7 +13,9 @@ mongoose.connect(process.env.MONGO_URI)
 let ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
 let SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
 let ItemsInteraction = mongoose.model('ItemsInteraction',ItemInteractionsSchema,'ItemInteractions');
-
+let HpofEnemy = mongoose.model('HpofEnemy',HpofEnemySchema,'HpofEnemys')
+let PeopleEnterSuccess = mongoose.model('PeopleEnterSuccess',PeopleEnterSuccessSchema,'PeopleEnterSuccesses')
+// let BallHitten = mongoose.model('BallHitten',ItemInteractionsSchema,'BallHittens')
 // var ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
 // for(var i=1;i<=4;i++){
 //     for(var j=0;j<20;j++){
@@ -37,6 +40,7 @@ let ItemsInteraction = mongoose.model('ItemsInteraction',ItemInteractionsSchema,
 let levelNum = 4;
 let SkillNum = 4;
 let ItemNum = 4;
+
 // for(var i=1;i<=ItemNum;i++){
 //     for(var j=0;j<i*i;j++){
 //         var temItem = new ItemsInteraction({
@@ -280,6 +284,106 @@ app.post("/getItemsInteract",async (req,res)=>{
     console.log(ans);
     res.send(ans);
 })
+
+//
+app.post("/logHpofEnemys",async (req,res)=>{
+    const userId = req.body['userId'];
+    const enemyId = req.body['enemyId'];
+    const hp = req.body['hp'];
+    var hpofenemy = new HpofEnemys({userId:userId,enemyId:enemyId,hp:hp});
+    console.log("logHpofEnemys:")
+    console.log("userID:",userId)
+    console.log("enemyID:",enemyId)
+    console.log("hp:",hp)
+    hpofenemy.save();
+    res.send("success!")
+})
+app.post("/getHpofEnemys",async (req,res)=>{
+    var ans = {
+        xLabel:[],
+        data:[]
+    };
+    var HpofEnemysRecords;
+    await HpofEnemy.find({})
+        .then(data=>{
+            HpofEnemysRecords = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    var enemyMap = new Map();
+    var sortEnemy = [];
+    HpofEnemysRecords.forEach((e)=>{
+        console.log(e);
+        var cur = enemyMap.get(e.enemyId)||[];
+        cur.push(e);
+        enemyMap.set(e.enemyId,cur);
+        if(!sortEnemy.includes(e.enemyId))
+            sortEnemy.push(e.enemyId);    
+    })
+    sortEnemy.sort();
+    console.log(sortEnemy);
+    sortEnemy.forEach((e)=>{
+        console.log("enemyid",e);
+        ans.xLabel.push('enemyID'+ e);
+        var userMap = new Map();
+        enemyMap.get(e).forEach((record)=>{
+            userMap.set(record.userId,(userMap.get(record.userId)||0)+record.hp);
+        })
+        var userNums = userMap.size;
+        var sum = 0;
+        userMap.forEach((v,k)=>{
+            sum += v
+        })
+        sum/=userNums;
+        ans.data.push(sum);
+    })
+    console.log('enemyID:')
+    console.log(ans)
+    res.send(ans);
+})
+//
+//
+app.post("/logPeopleEnterSuccesses",async (req,res)=>{
+    const level = req.body['level'];
+    const status = req.body['status'];
+    var skillUse = new SkillUse({level:level,status:status});
+    console.log("logPeopleEnterSuccesses:")
+    console.log("level:",level)
+    console.log("status:",status)
+    skillUse.save();
+    res.send("success!")
+})
+app.post("/getPeopleEnterSuccesses",async (req,res)=>{
+    var ans = {
+        xLabel:[],
+        data:[]
+    };
+    var PeopleEnterSuccesses;
+    await SkillUse.find({})
+        .then(data=>{
+            PeopleEnterSuccesses = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    var map = new Map();
+    var sortES = [];
+    PeopleEnterSuccesses.forEach((e)=>{
+        map.set(e.level,(map.get(e.level)||0)+e.status);
+        if(!sortES.includes(e.level))
+        sortES.push(e.level);
+    })
+    // var mapAsc = new Map([...map.entries()].sort());
+    sortES.forEach((e)=>{
+        ans.xLabel.push('level '+ e);
+        ans.data.push(map.get(e));
+    })
+    console.log('level:')
+    console.log('ans')
+    res.send(ans);
+})
+//
 
 app.listen(port, () => {
     console.log(`App running on PORT ${port}`);
