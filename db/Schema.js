@@ -32,4 +32,4 @@ var PeopleEnterSuccessSchema = mongoose.Schema({
 })
 
 
-export {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema,HpofEnemySchema}
+export {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema,HpofEnemySchema,PeopleEnterSuccessSchema}
