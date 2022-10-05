@@ -3,18 +3,17 @@ import bodyParser from 'body-parser'
 import fs from "fs"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
-import {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema,HpofEnemySchema,PeopleEnterSuccessSchema} from "./db/Schema.js"
+import {PeopleEnterSuccessSchema,
+    GearUsesSchema,
+    GearObtainsSchema,
+    HpofEnemySchema,
+    HitofBallsSchema} from "./db/Schema.js"
 import { cursorTo } from 'readline'
 //import {Int32} from "mongodb";
 
 dotenv.config()
 mongoose.connect(process.env.MONGO_URI)
 
-let ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
-let SkillUse = mongoose.model('SkillUse',SkillUsesSchema,'SkillUses');
-let ItemsInteraction = mongoose.model('ItemsInteraction',ItemInteractionsSchema,'ItemInteractions');
-let HpofEnemy = mongoose.model('HpofEnemy',HpofEnemySchema,'HpofEnemys')
-let PeopleEnterSuccess = mongoose.model('PeopleEnterSuccess',PeopleEnterSuccessSchema,'PeopleEnterSuccesses')
 // let BallHitten = mongoose.model('BallHitten',ItemInteractionsSchema,'BallHittens')
 // var ClearanceRecord = mongoose.model('ClearanceRecord',ClearanceRecordsSchema,'ClearanceRecords');
 // for(var i=1;i<=4;i++){
@@ -70,13 +69,20 @@ let ItemNum = 4;
 const app = express();
 app.use(bodyParser.json())
 const port = 8080;
+
+let PeopleEnterSuccess = mongoose.model('PeopleEnterSuccess',PeopleEnterSuccessSchema,'PeopleEnterSuccesses')
+let GearUse = mongoose.model('GearUse',GearUsesSchema,'GearUses')
+let GearObtain = mongoose.model('GearObtain',GearObtainsSchema,'GearObtains')
+let HpofEnemy = mongoose.model('HpofEnemy',HpofEnemySchema,'HpofEnemys')
+let HitofBall = mongoose.model('HitofBall',HitofBallsSchema,'HitofBalls')
+
+
 app.get("/Hello",(req,res)=>{
     res.sendFile("hello.html",{root:'.'})
 })
 app.get("/Plot2",(req,res)=>{
     res.sendFile("timeOfLevels.html",{root:'.'})
 })
-
 
 app.post('/timeOfLevels', async (req,res) => {
     console.log(req.body);
@@ -284,20 +290,6 @@ app.post("/getItemsInteract",async (req,res)=>{
     console.log(ans);
     res.send(ans);
 })
-
-//
-app.post("/logHpofEnemys",async (req,res)=>{
-    const userId = req.body['userId'];
-    const enemyId = req.body['enemyId'];
-    const hp = req.body['hp'];
-    var hpofenemy = new HpofEnemys({userId:userId,enemyId:enemyId,hp:hp});
-    console.log("logHpofEnemys:")
-    console.log("userID:",userId)
-    console.log("enemyID:",enemyId)
-    console.log("hp:",hp)
-    hpofenemy.save();
-    res.send("success!")
-})
 app.post("/getHpofEnemys",async (req,res)=>{
     var ans = {
         xLabel:[],
@@ -342,18 +334,48 @@ app.post("/getHpofEnemys",async (req,res)=>{
     console.log(ans)
     res.send(ans);
 })
-//
-//
+
 app.post("/logPeopleEnterSuccesses",async (req,res)=>{
     const level = req.body['level'];
     const status = req.body['status'];
-    var skillUse = new SkillUse({level:level,status:status});
-    console.log("logPeopleEnterSuccesses:")
-    console.log("level:",level)
-    console.log("status:",status)
-    skillUse.save();
+    let peopleEnterSuccess = new PeopleEnterSuccess({level:level,status:status});
+    console.log("logPeopleEnterSuccesses:",{level:level,status:status})
+    await peopleEnterSuccess.save();
     res.send("success!")
 })
+app.post("/logGearUses",async(req,res)=>{
+    const gearId = req.body['gearId'];
+    const status = req.body['status'];
+    let gearUse = new GearUse({gearId:gearId,status:status});
+    console.log("logGearUses:",{gearId:gearId,status:status})
+    await gearUse.save();
+    res.send("success!")
+})
+app.post("/logGearObtains",async(req,res)=>{
+    const gearId = req.body['gearId'];
+    const gearObtain = new GearObtain({gearId:gearId});
+    console.log("logGearObtains:",{gearId:gearId})
+    await gearObtain.save();
+    res.send("success!")
+})
+app.post("/logHpofEnemys",async (req,res)=>{
+    const userId = req.body['userId'];
+    const enemyId = req.body['enemyId'];
+    const hp = req.body['hp'];
+    let hpofenemy = new HpofEnemy({userId:userId,enemyId:enemyId,hp:hp});
+    console.log("logHpofEnemys:",{userId:userId,enemyId:enemyId,hp:hp})
+    await hpofenemy.save();
+    res.send("success!")
+})
+app.post("/logHitofBalls",async(req,res)=>{
+    const ballId = req.body['ballId'];
+    const hitCount = req.body['hitCount.'];
+    let hitofBall = new HitofBall({ballId:ballId,hitCount:hitCount});
+    console.log("logHitofBalls:",{ballId:ballId,hitCount:hitCount})
+    await hitofBall.save();
+    res.send("success!")
+})
+
 app.post("/getPeopleEnterSuccesses",async (req,res)=>{
     var ans = {
         xLabel:[],
@@ -383,7 +405,6 @@ app.post("/getPeopleEnterSuccesses",async (req,res)=>{
     console.log('ans')
     res.send(ans);
 })
-//
 
 app.listen(port, () => {
     console.log(`App running on PORT ${port}`);

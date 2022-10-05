@@ -1,35 +1,34 @@
 import mongoose from "mongoose";
 
-var SuccessInLevelsSchema = mongoose.Schema({
+var PeopleEnterSuccessSchema = mongoose.Schema({
     level:Number,
-    status:String,
-    time:Number,
+    status:String,//enter or complete
 })
 
-var ClearanceRecordsSchema = mongoose.Schema({
-    level:Number,
-    status:String,
-    time:Number
+var GearUsesSchema = mongoose.Schema({
+    gearId:Number,
+    status:String
 })
-var SkillUsesSchema = mongoose.Schema({
-    skillId:Number,
-    uses:Number
+
+var GearObtainsSchema = mongoose.Schema({
+    gearId:Number
 })
-var ItemInteractionsSchema = mongoose.Schema({
-    itemId:Number,
-    status:String,
-    count:Number
-})
+
 var HpofEnemySchema = mongoose.Schema({
     userId:String,
     enemyId:Number,
     hp:Number
 })
 
-var PeopleEnterSuccessSchema = mongoose.Schema({
-    level:Number,
-    status:String,//enter/complete
+var HitofBallsSchema = mongoose.Schema({
+    ballId:Number,
+    hitCount:Number
 })
 
 
-export {ClearanceRecordsSchema,SkillUsesSchema,ItemInteractionsSchema,HpofEnemySchema}
+export {PeopleEnterSuccessSchema,
+        GearUsesSchema,
+        GearObtainsSchema,
+        HpofEnemySchema,
+        HitofBallsSchema
+}
