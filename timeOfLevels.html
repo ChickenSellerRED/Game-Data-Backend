@@ -78,17 +78,27 @@
         // console.log(hitofBallsXlable)
         // console.log("hitofBalls:")
         // console.log(hitofBalls)
-
-        var gearNums = gearUses.length;
-        for(var i=0;i<gearNums;i++){
-            var thisLevel = [];
-            thisLevel.push(gearUsesXlabel[i]);
-            thisLevel.push(gearUses[i]);
-            gearsusess.push(thisLevel);
+        let usingType = ["plain use","charge","combo"];
+        for(let i=0;i<3;i++){
+            let data = [];
+            for(let j =0;j<gearUses.length;j++)
+                data.push(gearUses[j][i]);
+            gearsusess.push({
+                name: usingType[i],
+                data: data
+            })
         }
-        console.log(gearUsesXlabel)
-        console.log(gearUses[0])
-        console.log(gearsusess)
+        // var gearNums = gearUses.length;
+        // for(var i=0;i<gearNums;i++){
+        //     var thisLevel = [];
+        //     thisLevel.push(gearUsesXlabel[i]);
+        //     thisLevel.push(gearUses[i]);
+        //     gearsusess.push(thisLevel);
+        // }
+        // console.log("ok")
+        // console.log(gearUsesXlabel)
+        // console.log(gearUses[0])
+        // console.log(gearsusess)
 
         var BallNums = hitofBalls.length;
         for(var i=0;i<BallNums;i++){
@@ -166,20 +176,8 @@ Highcharts.chart('Plot2', {
             stacking: 'percent'
         }
     },
-    series: [{
-        name: 'Type of Used',
-        data: gearsusess
-    }]
-    // [{
-    //     name: 'plain use',
-    //     data: gearUses[0]
-    // }, {
-    //     name: 'charge',
-    //     data: gearUses[1]
-    // }, {
-    //     name: 'combo',
-    //     data: gearUses[2]
-    // }]
+    series: gearsusess,
+
 });
 
 Highcharts.chart('Plot3', {
