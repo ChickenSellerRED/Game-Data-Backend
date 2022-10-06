@@ -31,6 +31,7 @@
         var hpofEnemies;
         var hitofBallsXlable;
         var hitofBalls;
+        var eess = [];
         var gearsusess = [];
         var balltypehit = [];
         var server = ""
@@ -78,6 +79,21 @@
         // console.log(hitofBallsXlable)
         // console.log("hitofBalls:")
         // console.log(hitofBalls)
+        console.log(peopleEnterSuccessesXlabel)
+        console.log(peopleEnterSuccesses)
+
+        let PlayerType = ["entered","success"];
+        for(let i=0;i<2;i++){
+            let data = [];
+            for(let j =0;j<peopleEnterSuccesses.length;j++)
+                data.push(peopleEnterSuccesses[j][i]);
+            eess.push({
+                name: PlayerType[i],
+                data: data
+            })
+        }
+        console.log(eess)
+
         let usingType = ["plain use","charge","combo"];
         for(let i=0;i<3;i++){
             let data = [];
@@ -140,15 +156,7 @@ Highcharts.chart('Plot1', {
             borderWidth: 0
         }
     },
-    series: [{
-        name: 'Entered',
-        // data:[1,4,9,16]
-        data: peopleEnterSuccesses[0]
-    },{
-        name: 'Success',
-        // data:[1,4,9,16]
-        data: peopleEnterSuccesses[1]
-    }]
+    series: eess,
 });
 
 Highcharts.chart('Plot2', {
