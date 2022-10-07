@@ -103,10 +103,10 @@ app.post("/getPeopleEnterSuccesses",async (req,res)=>{
     sortES = sortByNum(sortES);
     sortES.forEach((level)=>{
         ans.xLabel.push('level '+ level);
-        ans.data.push({
-            enter:enterMap.get(level)||0,
-            success:successMap.get(level)||0
-        });
+        ans.data.push([
+            enterMap.get(level)||0,
+            successMap.get(level)||0
+        ]);
     })
     console.log('getPeopleEnterSuccesses:',ans)
     res.send(ans);

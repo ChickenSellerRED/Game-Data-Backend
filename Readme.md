@@ -46,8 +46,8 @@
 {
   "xLabel": ["level 1","level 2",...],
   "data":[
-    {"enter": int,"success": int},
-    {"enter": int,"success": int},
+    [int,int],//[enter,success],
+    [int,int],//[enter,success],
     ...
   ]
 }
