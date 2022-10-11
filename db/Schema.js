@@ -4,14 +4,17 @@ var PeopleEnterSuccessSchema = mongoose.Schema({
     level:Number,
     status:String,//enter or complete
 })
-
-var GearUsesSchema = mongoose.Schema({
-    gearId:Number,
-    status:String
+var GearShowsSchema = mongoose.Schema({
+    gearId:Number
 })
 
 var GearObtainsSchema = mongoose.Schema({
     gearId:Number
+})
+
+var GearUsesSchema = mongoose.Schema({
+    gearId:Number,
+    status:String
 })
 
 var HpofEnemySchema = mongoose.Schema({
@@ -28,8 +31,9 @@ var HitofBallsSchema = mongoose.Schema({
 
 
 export {PeopleEnterSuccessSchema,
-        GearUsesSchema,
+        GearShowsSchema,
         GearObtainsSchema,
+        GearUsesSchema,
         HpofEnemySchema,
         HitofBallsSchema
 }

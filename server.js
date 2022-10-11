@@ -4,8 +4,9 @@ import dotenv from "dotenv"
 import mongoose from "mongoose"
 import path from 'path';
 import {PeopleEnterSuccessSchema,
-    GearUsesSchema,
+    GearShowsSchema,
     GearObtainsSchema,
+    GearUsesSchema,
     HpofEnemySchema,
     HitofBallsSchema} from "./db/Schema.js"
 
@@ -17,8 +18,9 @@ app.use(bodyParser.json())
 const port = 8080;
 
 let PeopleEnterSuccess = mongoose.model('PeopleEnterSuccess',PeopleEnterSuccessSchema,'PeopleEnterSuccesses')
-let GearUse = mongoose.model('GearUse',GearUsesSchema,'GearUses')
+let GearShow = mongoose.model('GearShow',GearShowsSchema,'GearShows')
 let GearObtain = mongoose.model('GearObtain',GearObtainsSchema,'GearObtains')
+let GearUse = mongoose.model('GearUse',GearUsesSchema,'GearUses')
 let HpofEnemy = mongoose.model('HpofEnemy',HpofEnemySchema,'HpofEnemys')
 let HitofBall = mongoose.model('HitofBall',HitofBallsSchema,'HitofBalls')
 
@@ -43,12 +45,11 @@ app.post("/logPeopleEnterSuccesses",async (req,res)=>{
     await peopleEnterSuccess.save();
     res.send("success!")
 })
-app.post("/logGearUses",async (req,res)=>{
+app.post("/logGearShow",async (req,res)=>{
     const gearId = req.body['gearId'];
-    const status = req.body['status'];
-    let gearUse = new GearUse({gearId:gearId,status:status});
-    console.log("logGearUses:",{gearId:gearId,status:status})
-    await gearUse.save();
+    const gearShow = new GearShow({gearId:gearId});
+    console.log("logGearShows:",{gearId:gearId})
+    await gearShow.save();
     res.send("success!")
 })
 app.post("/logGearObtains",async (req,res)=>{
@@ -56,6 +57,14 @@ app.post("/logGearObtains",async (req,res)=>{
     const gearObtain = new GearObtain({gearId:gearId});
     console.log("logGearObtains:",{gearId:gearId})
     await gearObtain.save();
+    res.send("success!")
+})
+app.post("/logGearUses",async (req,res)=>{
+    const gearId = req.body['gearId'];
+    const status = req.body['status'];
+    let gearUse = new GearUse({gearId:gearId,status:status});
+    console.log("logGearUses:",{gearId:gearId,status:status})
+    await gearUse.save();
     res.send("success!")
 })
 app.post("/logHpofEnemies",async (req,res)=>{
@@ -151,33 +160,90 @@ app.post("/getGearUses",async (req,res) => {
     console.log("getGearUses:",ans);
     res.send(ans);
 })
-app.post("/getGearObtains",async (req,res) => {
+app.post("/getGearShowsVsObtains",async (req,res) => {
     let ans = {
         xLabel:[],
         data:[]
     };
-    let records;
-    await GearObtain.find({})
+    let showRecords,obtainRecords;
+    await GearShow.find({})
         .then(data=>{
-            records = data;
+            showRecords = data;
         })
         .catch(err=>{
             console.log("err:",err)
         })
-    let obtainMap = new Map();
+    await GearObtain.find({})
+        .then(data=>{
+            obtainRecords = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    let showMap = new Map(), obtainMap = new Map();
     let sortGear = [];
-    records.forEach((record) => {
+    showRecords.forEach((record) => {
+        let gearId = record.gearId;
+        showMap.set(gearId,(showMap.get(gearId)||0)+1);
+        if(!sortGear.includes(gearId))
+            sortGear.push(gearId);
+    })
+    obtainRecords.forEach((record) => {
+        let gearId = record.gearId;
+        obtainMap.set(gearId,(obtainMap.get(gearId)||0)+1);
+    })
+    sortGear = sortByNum(sortGear);
+    sortGear.forEach((gearId) => {
+        ans.xLabel.push("gear " + gearId);
+        ans.data.push([
+            showMap.get(gearId)||0,
+            obtainMap.get(gearId)||0
+        ])
+    })
+    console.log("getGearShowsVsObtains:",ans);
+    res.send(ans);
+})
+app.post("/getGearObtainsVsUses",async (req,res) => {
+    let ans = {
+        xLabel:[],
+        data:[]
+    };
+    let obtainRecords,useRecords;
+    await GearObtain.find({})
+        .then(data=>{
+            obtainRecords = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    await GearUse.find({})
+        .then(data=>{
+            useRecords = data;
+        })
+        .catch(err=>{
+            console.log("err:",err)
+        })
+    let obtainMap = new Map(), useMap = new Map();
+    let sortGear = [];
+    obtainRecords.forEach((record) => {
         let gearId = record.gearId;
         obtainMap.set(gearId,(obtainMap.get(gearId)||0)+1);
         if(!sortGear.includes(gearId))
             sortGear.push(gearId);
     })
+    useRecords.forEach((record) => {
+        let gearId = record.gearId;
+        useMap.set(gearId,(useMap.get(gearId)||0)+1);
+    })
     sortGear = sortByNum(sortGear);
     sortGear.forEach((gearId) => {
         ans.xLabel.push("gear " + gearId);
-        ans.data.push(obtainMap.get(gearId)||0)
+        ans.data.push([
+            obtainMap.get(gearId)||0,
+            useMap.get(gearId)||0
+        ])
     })
-    console.log("getGearObtains:",ans);
+    console.log("getGearObtainsVsUses:",ans);
     res.send(ans);
 })
 app.post("/getHpofEnemies",async (req,res)=>{
