@@ -16,7 +16,7 @@
     <div id="Plot1"></div>
     <div id="Plot2"></div>
     <div id="Plot3"></div>
-    <!-- <div id="Plot4"></div> -->
+    <div id="Plot4"></div>
     <div id="Plot5"></div>
     <div id="Plot6"></div>
     <script>
@@ -26,19 +26,24 @@
         var peopleEnterSuccesses;
         var gearUsesXlabel;
         var gearUses;
-        var gearObtainsXlable;
-        var gearObtains;
+        var gearShowsVsObtainsXlabel;
+        var gearShowsVsObtains;
+        var gearObtainsVsUsesXlabel;
+        var gearObtainsVsUses;
         var hpofEnemiesXlable;
         var hpofEnemies;
         var hitofBallsXlable;
         var hitofBalls;
         var eess = [];
+        var gearsb = [];
+        var gearbu = [];
         var gearsusess = [];
         var balltypehit = [];
         var server = ""
         var server0 = server + "/getPeopleEnterSuccesses"
         var server1 = server + "/getGearUses"
-        var server2 = server + "/getGearObtains"
+        var server1_1 = server + "/getGearShowsVsObtains"
+        var server1_2 = server + "/getGearObtainsVsUses"
         var server3 = server + "/getHpofEnemies"
         var server4 = server + "/getHitofBalls"
 
@@ -55,10 +60,16 @@
                 gearUses = response.data.data;
             });
         await axios
-            .post(server2)
+            .post(server1_1)
             .then(function (response) {
-                gearObtainsXlable = response.data.xLabel;
-                gearObtains = response.data.data;
+                gearShowsVsObtainsXlabel = response.data.xLabel;
+                gearShowsVsObtains = response.data.data;
+            });
+        await axios
+            .post(server1_2)
+            .then(function (response) {
+                gearObtainsVsUsesXlabel = response.data.xLabel;
+                gearObtainsVsUses = response.data.data;
             });
         await axios
             .post(server3)
@@ -72,16 +83,16 @@
                 hitofBallsXlable = response.data.xLabel;
                 hitofBalls = response.data.data;
             });
-        // console.log("gearUsesXlabel:")
-        // console.log(gearUsesXlabel)
-        // console.log("gearUses:")
-        // console.log(gearUses)
+        console.log("gearObtainsVsUsesXlabel:")
+        console.log(gearObtainsVsUsesXlabel)
+        console.log("gearObtainsVsUses:")
+        console.log(gearObtainsVsUses)
         // console.log("hitofBallsXlable:")
         // console.log(hitofBallsXlable)
         // console.log("hitofBalls:")
         // console.log(hitofBalls)
-        console.log(peopleEnterSuccessesXlabel)
-        console.log(peopleEnterSuccesses)
+        // console.log(peopleEnterSuccessesXlabel)
+        // console.log(peopleEnterSuccesses)
 
         let PlayerType = ["entered","success"];
         for(let i=0;i<2;i++){
@@ -93,7 +104,28 @@
                 data: data
             })
         }
-        console.log(eess)
+
+        let Gear_show_Type = ["showed","obtained"];
+        for(let i=0;i<2;i++){
+            let data = [];
+            for(let j =0;j<gearShowsVsObtains.length;j++)
+                data.push(gearShowsVsObtains[j][i]);
+            gearsb.push({
+                name: Gear_show_Type[i],
+                data: data
+            })
+        }
+
+        let Gear_use_Type = ["obtained","used"];
+        for(let i=0;i<2;i++){
+            let data = [];
+            for(let j =0;j<gearObtainsVsUses.length;j++)
+                data.push(gearObtainsVsUses[j][i]);
+            gearbu.push({
+                name: Gear_use_Type[i],
+                data: data
+            })
+        }
 
         let usingType = ["plain use","charge","combo"];
         for(let i=0;i<3;i++){
@@ -124,7 +156,7 @@
             thisLevel.push(hitofBalls[i]);
             balltypehit.push(thisLevel);
         }
-        console.log(balltypehit)
+        // console.log(balltypehit)
 
 Highcharts.chart('Plot1', {
     chart: {
@@ -194,10 +226,10 @@ Highcharts.chart('Plot3', {
         type: 'column'
     },
     title: {
-        text: 'Gears Obtained'
+        text: 'Gears Showed and Obtained'
     },
     xAxis: {
-        categories: gearObtainsXlable,
+        categories: gearShowsVsObtainsXlabel,
         crosshair: true
     },
     yAxis: {
@@ -220,14 +252,44 @@ Highcharts.chart('Plot3', {
             borderWidth: 0
         }
     },
-    series: [{
-        name: 'Gears',
-        data: gearObtains
-
-    }]
+    series:  gearsb,
 });
 
 // 'Plot4'
+Highcharts.chart('Plot4', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'Gears Obtained and Used'
+    },
+    xAxis: {
+        categories: gearObtainsVsUsesXlabel,
+        crosshair: true
+    },
+    yAxis: {
+        title: {
+            useHTML: true,
+            text: 'Gears'
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+        }
+    },
+    series:  gearbu,
+});
+
 
 Highcharts.chart('Plot5', {
     chart: {

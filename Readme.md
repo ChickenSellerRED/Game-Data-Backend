@@ -70,7 +70,7 @@
   ]
 }
 ```
-#### /getGearObtainsVsUses:装备的展示对比获取次数
+#### /getGearShowsVsObtains:装备的展示对比获取次数
 ```json
 {
   "xLabel": ["gear 1","gear 2",...],
