@@ -9,12 +9,11 @@
   "status": "enter"/"success",
 }
 ```
-#### logGearUses:装备的使用次数
+#### logGearshows:装备的展示次数
 ```json
 {
   "userId": String,
-  "gearId":int,
-  "status": "plain use"/"charge"/"combo"
+  "gearId":int
 }
 ```
 #### logGearobtains:装备的获取次数
@@ -22,6 +21,14 @@
 {
   "userId": String,
   "gearId":int
+}
+```
+#### logGearUses:装备的使用次数
+```json
+{
+  "userId": String,
+  "gearId":int,
+  "status": "plain use"/"charge"/"combo"
 }
 ```
 #### logHpofEnemies:面对敌人,玩家消耗的血量
@@ -63,13 +70,24 @@
   ]
 }
 ```
-#### /getGearobtains:装备的获取次数
+#### /getGearObtainsVsUses:装备的展示对比获取次数
 ```json
 {
   "xLabel": ["gear 1","gear 2",...],
   "data":[
-    int,//(Obtain)
-    int,//(Obtain)
+    [int,int],//(Show,Obtain)
+    [int,int],//(Show,Obtain)
+    ...
+  ]
+}
+```
+#### /getGearObtainsVsUses:装备的获取对比使用次数
+```json
+{
+  "xLabel": ["gear 1","gear 2",...],
+  "data":[
+    [int,int],//(Obtain,Use)
+    [int,int],//(Obtain,Use)
     ...
   ]
 }
@@ -85,7 +103,7 @@
   ]
 }
 ```
-#### /getHitofBalls:集中球种类的比例分布
+#### /getHitofBalls:击中球种类的比例分布
 ```json
 {
   "xLabel": ["ball 1","ball 2",...],
