@@ -45,7 +45,7 @@ app.post("/logPeopleEnterSuccesses",async (req,res)=>{
     await peopleEnterSuccess.save();
     res.send("success!")
 })
-app.post("/logGearShow",async (req,res)=>{
+app.post("/logGearShows",async (req,res)=>{
     const gearId = req.body['gearId'];
     const gearShow = new GearShow({gearId:gearId});
     console.log("logGearShows:",{gearId:gearId})
