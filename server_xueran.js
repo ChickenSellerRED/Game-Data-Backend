@@ -60,6 +60,11 @@ xueran.on('connection', function connection(ws,req) {
             case "proactive_information_give":
                 //todo: send(proactive_information_give) to user
                 curUser.curRoom.game.sendProactiveInformation(data.body);
+            case "nominate":
+                curUser.curRoom.game.dealNominate(data.body);
+            case "vote":
+                curUser.curRoom.game.dealVote(data.body)
+
             default: break;
         }
     });

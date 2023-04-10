@@ -128,4 +128,10 @@ export class User{
             }
         });
     }
+    plsVote(seatNumber){
+        this.notify({
+            "verb":"pls_vote",
+            "nominatee_seat_number":seatNumber
+        })
+    }
 }

@@ -91,3 +91,22 @@ var argument = {
 var argument = {
     "user":1
 }
+
+////提名json
+var json = {
+    "verb":"nominate",
+    body:{
+        "from_seat_number":1,
+        "to_seat_number":2,
+    }
+}
+////投票json
+
+var json = {
+    "verb":"vote",
+    body:{
+        "from_seat_number":1,
+        "to_seat_number":2,
+        "result":true || false
+    }
+}
