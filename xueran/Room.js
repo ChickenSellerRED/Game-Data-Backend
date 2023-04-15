@@ -1,5 +1,6 @@
 import {User} from "./User.js";
 import {Global} from "./Global.js";
+import {Game} from "./Game.js";
 
 export class Room{
     homeOwner;
@@ -90,14 +91,7 @@ export class Room{
             u.notifyMembersChange(user,false);
         })
     }
-    startGame(){
-        this.members.forEach((u)=>{
-            u.notify({
-                "verb":"game_started"
-            })
-        });
-        this.shuffleCharacters();
-    }
+
     shuffleCharacters(townsfolk,outsiders,minions,demons){
         this.townsfolk = townsfolk;
         this.outsiders = outsiders;
@@ -119,6 +113,12 @@ export class Room{
 
     }
     startGame(json){
+        this.game = new Game(json.body);
+        this.members.forEach((u)=>{
+            u.notify({
+                "verb":"game_started"
+            })
+        });
         this.shuffleCharacters(
             json.body.townsfolk,
             json.body.outsiders,

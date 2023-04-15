@@ -10,6 +10,7 @@ export class User{
     isAlive
     seatNumber
     fakeCharacter
+    canDeadVote = true;
     client; // its ws variable
 
 
@@ -95,10 +96,20 @@ export class User{
     }
 
     useSkill(){
-        if(this.characterType() === "passive")
+        var ct = this.characterType();
+        if(ct === "passive")
             this.dealPassive();
-        else if(this.characterType() === "proactive")
+        else if(ct === "proactive")
             this.dealProactive();
+        else if(ct === "other"){
+            if(this.character === "间谍"){
+                //发送间谍信息
+                this.room.game.sendSpyInformation();
+            }
+            else if(this.character === "红唇女郎"){
+                //todo:判断是否继承
+            }
+        }
     }
     characterType(){
         var role = this.character;

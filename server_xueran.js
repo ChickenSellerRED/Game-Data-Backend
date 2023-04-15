@@ -47,23 +47,27 @@ xueran.on('connection', function connection(ws,req) {
                 break;
             case "start_game":
                 curUser.curRoom.startGame(data);
-                // curUser.startGame();
                 break;
             case "passive_information_give":
-                //todo: send(passive_information_give) to user
                 curUser.curRoom.game.sendPassiveInformation(data.body);
                 break;
             case "proactive_argument_give":
-                //todo: send(proactive_information_need) to homeowner
                 curUser.curRoom.game.sendProactiveArgument(data.body);
                 break;
             case "proactive_information_give":
-                //todo: send(proactive_information_give) to user
                 curUser.curRoom.game.sendProactiveInformation(data.body);
+                break;
             case "nominate":
                 curUser.curRoom.game.dealNominate(data.body);
+                break;
             case "vote":
                 curUser.curRoom.game.dealVote(data.body)
+                break;
+            case "want_shot":
+                curUser.curRoom.game.dealShot(data.body)
+                break;
+            case "end_night":
+                curUser.curRoom.game.startNextDay();
 
             default: break;
         }
