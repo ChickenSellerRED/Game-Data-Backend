@@ -8,73 +8,136 @@
 
 
 // 洗衣妇,Washerwoman
-var information = {
-    "from_seat_number":5,
-    "users":[1,2],
-    "character":"杀手"
+var json = {
+    "verb":"passive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"洗衣妇",
+        "information":{
+            "users":[1,2],
+            "character":"杀手"
+        }
+    }
 }
 
 // 图书管理员,Librarian
-var information = {
-    "from_seat_number":5,
-    "users":[1,2] || [],
-    "character":"圣徒" || "没有外来者"
+var json = {
+    "verb":"passive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"图书管理员",
+        "information":{
+            "users":[1,2] || [],
+            "character":"圣徒" || "没有外来者"
+        }
+    }
 }
 
 // 调查员,Investigator
-var information = {
-    "from_seat_number":5,
-    "users":[1,2],
-    "character":"男爵"
+var json = {
+    "verb":"passive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"调查员",
+        "information":{
+            "users":[1,2],
+            "character":"男爵"
+        }
+    }
 }
-
 // 厨师,Chef
-var information = {
-    "from_seat_number":5,
-    "neighborNumber":1
+var json = {
+    "verb":"passive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"厨师",
+        "information":{
+            "neighborNumber":1
+        }
+    }
 }
 
 // 共情者,Empath
-var information = {
-    "from_seat_number":5,
-    "evilNumber":1
+var json = {
+    "verb":"passive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"共情者",
+        "information":{
+            "evilNumber":1
+        }
+    }
 }
-
+// 送葬者,Undertaker
+var json = {
+    "verb":"passive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"送葬者",
+        "information":{
+            "user":1,
+            "character":"男爵"
+        }
+    }
+}
 // 占卜师,Fortuneteller
 var argument = {
-    "from_seat_number":5,
-    "users":[1,2]
+    "verb":"proactive_information_need",
+    "body":{
+        "seat_number":1,
+        "character":"占卜师",
+        "argument":{
+            "users":[1,2]
+        }
+    }
+}
+var information = {
+    "verb":"proactive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"占卜师",
+        "information":{
+            "users":[1,2],
+            "isThereADevil":true
+        }
+    }
 }
 
-var information = {
-    "from_seat_number":5,
-    "users":[1,2],
-    "isThereADevil":true
-}
-
-// 送葬者,Undertaker
-var information = {
-    "from_seat_number":5,
-    "user":1,
-    "character":"男爵"
-}
 
 // 渡鸦守护者,Ravenkeeper
 var argument = {
-    "from_seat_number":5,
-    "user":1
+    "verb":"proactive_information_need",
+    "body":{
+        "seat_number":1,
+        "character":"渡鸦守护者",
+        "argument":{
+            "user":1
+        }
+    }
+}
+var information = {
+    "verb":"proactive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"渡鸦守护者",
+        "information":{
+            "user":1,
+            "character":"市长"
+        }
+    }
 }
 
-var information = {
-    "from_seat_number":5,
-    "user":1,
-    "character":"市长"
-}
 
 // 僧侣,Monk
 var argument = {
-    "from_seat_number":5,
-    "user":1
+    "verb":"proactive_information_need",
+    "body":{
+        "seat_number":1,
+        "character":"僧侣",
+        "argument":{
+            "protect_user":1
+        }
+    }
 }
 
 // 杀手,Slayer
@@ -94,19 +157,25 @@ var json = {
     }
 }
 // 圣女,Virgin
-var json = {
-    "verb":"virgin_result",
-    "body":{
-        "from_seat_number":1,
-        "dead_user_number":1
-    }
-}
+// var json = {
+//     "verb":"virgin_result",
+//     "body":{
+//         "from_seat_number":1,
+//         "dead_user_number":1
+//     }
+// }
 // 市长,Mayor
 // 士兵,Soldier
 // 管家,Butler
 var argument = {
-    "from_seat_number":1,
-    "user":1
+    "verb":"proactive_information_need",
+    "body":{
+        "seat_number":1,
+        "character":"管家",
+        "argument":{
+            "master_user":1
+        }
+    }
 }
 
 // 酒鬼,Drunk
@@ -114,8 +183,14 @@ var argument = {
 // 圣徒,Saint
 // 投毒者,Poisoner
 var argument = {
-    "from_seat_number":1,
-    "user":1
+    "verb":"proactive_information_need",
+    "body":{
+        "seat_number":1,
+        "character":"投毒者",
+        "argument":{
+            "poison_user":1
+        }
+    }
 }
 
 // 间谍,Spy

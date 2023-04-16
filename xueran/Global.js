@@ -6,6 +6,7 @@ export class Global{
     static passiveCharacterList = [];
     static proactiveCharacterList = [];
     static lazyProactiveCharacterList = [];
+    static townsfolk = [];
     static evilCharacter = [];
     static init(){
         Global.num2rooms = new Map();
@@ -40,6 +41,7 @@ export class Global{
         this.proactiveCharacterList = ["占卜师","僧侣","管家","投毒者","渡鸦守护者","小恶魔"];
         this.lazyProactiveCharacterList = ["僧侣","管家","投毒者","小恶魔"];
         this.evilCharacter = ["小恶魔","间谍","红唇女郎","男爵"];
+        this.townsfolk = ["洗衣妇","图书管理员","调查员","厨师","共情者","送葬者","占卜师","僧侣","渡鸦守护者","圣女","市长","士兵","杀手"]
     }
 
 }

@@ -145,4 +145,20 @@ export class User{
             "nominatee_seat_number":seatNumber
         })
     }
+    isTownsfolk(){
+        return Global.townsfolk.includes(this.character);
+    }
+    becomeImp(){
+        this.notify({
+            "verb":"you_become_imp"
+        });
+        this.room.homeOwner.notify({
+            "verb":"someone_become_imp",
+            "body":{
+                "seat_number":this.seatNumber,
+                "character":this.character
+            }
+        })
+        this.character = "小恶魔";
+    }
 }

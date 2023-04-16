@@ -12,7 +12,8 @@ export class Game{
     daysLog //json数组 游戏日志，每天清空
     nominatingUser //整数 在这一轮，正在被提名的玩家
     voteList //整数数组 在这一轮， 所有玩家获得的票数。若未被提名过则为undefined
-    willBeExecutedUsers //整数 在这一轮，将被处决的玩家
+    willBeExecutedUser //整数 在这一轮，将被处决的玩家
+    executedUser //整数 被处决的玩家
     maxVote = 0;//整数 在这一轮的最大得票数
     actionOrder = [];//整数数组 夜晚玩家的行动顺序
     actionIndex = 0; //整数 标志当前行动的玩家
@@ -26,8 +27,11 @@ export class Game{
 
     monkProtect = -1;//整数 在这一轮被保护的玩家
     butlerMaster = -1;//整数 在这一轮管家的主人
-    poisonedUser = -1;//整数 在这一轮被毒的玩家
+    poisonedUser = -1;//整数 在这一轮被毒的玩家 // 添加中毒信息到user中
     beKilledUser = -1;//整数 在这一轮被杀的玩家
+
+    isVirginValid = true;//bool 圣女技能是否还在
+    isKillerValid = true;//bool 杀手技能是否还在
 
 
 
@@ -110,8 +114,13 @@ export class Game{
         });
     }
     dealAction(){
-        if(this.actionIndex < this.actionOrder.length)
-            this.room.seats[this.actionOrder[this.actionIndex++]].useSkill();
+        if(this.actionIndex < this.actionOrder.length){
+            var curSkillUser = this.actionOrder[this.actionIndex++];
+            if(!this.room.seats[curSkillUser].isAlive)
+                this.dealAction();
+            else
+                this.room.seats[].useSkill();
+        }
         else{
             this.room.homeOwner.notify({
                 "verb":"night_action_over"
@@ -161,14 +170,14 @@ export class Game{
         var userSeatNumber = this.isExistAndAlive(roleName);
         if(userSeatNumber!==-1){
             this.room.seats[userSeatNumber].notify({
-                "verb":"passive_argument_give",
+                "verb":"passive_information_give",
                 "body":body
             });
+            this.daysLog.push({
+                "type":"information_passive",
+                "body":body
+            })
         }
-        this.daysLog.push({
-            "type":"information_passive",
-            "character":
-        })
         this.dealAction();
 
     }
@@ -180,11 +189,15 @@ export class Game{
             "body":body
         });
         if(isLazy){
-            //todo:处理daysLog
-
+            //处理daysLog
+            this.daysLog.push({
+                "type":"information_proactive",
+                "body":body
+            })
         }
     }
     sendProactiveInformation(body){
+        //只有可能是占卜师和渡鸦守护者
         var roleName = body.character;
         var userSeatNumber = this.isExistAndAlive(roleName);
         if(userSeatNumber!==-1){
@@ -193,13 +206,25 @@ export class Game{
                 "body":body
             });
         }
+        this.daysLog.push({
+            "type":"information_proactive",
+            "body":body
+        })
         this.dealAction();
     }
     dealNominate(body){
-        var index = body.to_seat_number;
+        var fromUser = body.from_seat_number;
+        var toUser = body.to_seat_number;
+        if(this.room.seats[fromUser].isTownsfolk() &&
+            this.room.seats[toUser].character === "圣女" &&
+            this.poisonedUser !== fromUser &&
+            this.isVirginValid){
+                this.isVirginValid = false;
+                this.execute(toUser);
+        }
         this.initNominate();
-        this.nominatingUser = index;
-        this.room.seats[(index+1)%this.room.maxPeople].plsVote(this.nominatingUser);
+        this.nominatingUser = toUser;
+        this.room.seats[(toUser+1)%this.room.maxPeople].plsVote(this.nominatingUser);
 
     }
     initNominate(){
@@ -210,6 +235,69 @@ export class Game{
         this.maxVote = -1;
         this.voteList = Array.from({length:this.room.maxPeople});
     }
+    startNight(){
+        //todo:开始新的晚上
+    }
+    execute(userNumber){
+        this.room.seats[userNumber].isAlive = false;
+        this.daysLog.push({
+            "type":"execute_user",
+            "body":{
+                "seat_number":userNumber,
+                "character":this.room.seats[userNumber].character
+            }
+        })
+        //通知所有人
+        this.notifyAll({
+            "verb":"execute_user",
+            "body":{
+                "seat_number":userNumber,
+                "character":this.room.seats[userNumber].character
+            }
+        })
+        //如果是圣徒，游戏结束
+        if(this.room.seats[userNumber].character === "圣徒" && this.poisonedUser !== userNumber){
+            this.notifyAll({
+                "verb":"game_over",
+                "body":{
+                    "winner":"evil"
+                }
+            })
+            return;
+        }
+        //小恶魔被处决逻辑（即好人胜利逻辑）
+        if(this.room.seats[userNumber].character === "小恶魔"){
+            //红唇女郎继承
+            this.dealSecretwoman();
+        }
+        //todo:恶魔胜利逻辑
+        this.startNight();
+    }
+    dealSecretwoman(){
+        var secretwomanNumber = this.isExistAndAlive("红唇女郎");
+        if(this.livingNumbers()+1>=5 && secretwomanNumber !== -1 && this.poisonedUser !== secretWomanNumber){
+            this.room.seats[secretwomanNumber].becomeImp();
+            this.daysLog.push({
+                "type":"someone_become_imp",
+                "body":{
+                    "seat_number":secretwomanNumber,
+                    "character":"红唇女郎"
+                }
+            })
+        }else{
+            this.game_over("justice","小恶魔被处决")
+        }
+    }
+    game_over(winner,reason){
+        this.notifyAll({
+            "verb":"game_over",
+            "body":{
+                "winner":winner,
+                "reason":reason
+            }
+        })
+    }
+    impSuicide
     endNominate(){
         var voteCount = 0;
         for(var i=0;i<this.vote.length;i++)
@@ -223,9 +311,9 @@ export class Game{
         }
         if(voteCount > this.maxVote){//得票最高，上处刑台
             this.maxVote = voteCount;
-            this.willBeExecutedUsers = this.nominatingUser
+            this.willBeExecutedUser = this.nominatingUser
         }else if(voteCount === this.maxVote){//最高票平票，清空处刑台
-            this.willBeExecutedUsers = -1;
+            this.willBeExecutedUser = -1;
         }
         this.initNominate();
     }
@@ -270,19 +358,27 @@ export class Game{
         var from = body.from_seat_number;
         var to = body.to_seat_number;
         var shotSuccess = false;
-        if(this.room.seats[from].character === "杀手" && +
-            this.room.seats[to].character === "小恶魔" &&
-            this.poisonedUser !== from){
-            shotSuccess = true;
+        if(this.room.seats[from].character === "杀手"){
+            if(this.room.seats[to].character === "小恶魔" &&
+                this.poisonedUser !== from &&
+                this.isKillerValid === true){
+                    shotSuccess = true;
+                    this.room.seats[to].isAlive = false;
+            }
+            this.isKillerValid = false;
         }
-        this.notifyAll({
+        if(this.room.seats[from].character === "杀手")
+            this.isKillerValid = false;
+        var data = {
             "verb":"shot_result",
             "body":{
                 "from_seat_number":from,
                 "to_seat_number":to,
                 "result": shotSuccess
             }
-        })
+        };
+        this.notifyAll(data);
+        this.daysLog.push(data);
     }
     startNextDay(){
         //进入下一天
