@@ -119,7 +119,7 @@ export class Game{
             if(!this.room.seats[curSkillUser].isAlive)
                 this.dealAction();
             else
-                this.room.seats[].useSkill();
+                this.room.seats[curSkillUser].useSkill();
         }
         else{
             this.room.homeOwner.notify({
