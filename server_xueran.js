@@ -61,11 +61,13 @@ xueran.on('connection', function connection(ws,req) {
                 curUser.curRoom.game.dealNominate(data.body);
                 break;
             case "vote":
-                curUser.curRoom.game.dealVote(data.body)
+                curUser.curRoom.game.dealVote(data.body);
                 break;
             case "want_shot":
-                curUser.curRoom.game.dealShot(data.body)
+                curUser.curRoom.game.dealShot(data.body);
                 break;
+            case "die_for_mayor":
+                curUser.curRoom.game.dieForMayor(body);
             case "end_night":
                 curUser.curRoom.game.startNextDay();
 

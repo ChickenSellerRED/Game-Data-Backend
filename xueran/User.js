@@ -108,9 +108,6 @@ export class User{
                 //发送间谍信息
                 this.room.game.sendSpyInformation();
             }
-            else if(this.character === "红唇女郎"){
-                //todo:判断是否继承
-            }
         }
     }
     characterType(){
@@ -168,4 +165,25 @@ export class User{
             this.canBeNominated = true;
         }
     }
+    beKilled(){
+        //僧侣
+        if(this.curRoom.game.monkProtect === this.seatNumber)
+            return;
+        //士兵
+        if(this.character === "士兵"){
+            if(this.curRoom.game.poisonedUser === this.seatNumber){
+                this.curRoom.game.willBeExecutedUser = this.seatNumber;
+                this.die();
+            }
+            else
+                return;
+        }else if(this.character === "小恶魔"){
+            this.curRoom.game.willBeExecutedUser = this.seatNumber;
+            this.die();
+
+        }
+    }
+    beExecuted(){
+
+}
 }

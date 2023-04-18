@@ -49,14 +49,27 @@ export class Game{
     }
 
     initDay(){
+        this.stage = Stage.freeTalking;
         this.daysLog = [];
+        this.nominatingUser = -1;
+        this.voteList = [];
+        this.willBeExecutedUser = [];
+        this.executedUser = -1;
+        this.maxVote = 0;
+        this.room.seats.forEach((u)=>{
+            u.wakeUp();
+        })
+
     }
     initNight(){
-        this.actionIndex = 0;
-        this.monkProtect = -1;
-        this.butlerMaster = -1;
-        this.poisonedUser = -1;
-        this.beKilledUser = -1;
+        this.stage = Stage.night;
+        this.actionIndex = 0; // 当前行动的玩家
+        this.actionOrder = [];
+        this.monkProtect = -1;//重置 僧侣保护的人
+        this.butlerMaster = -1;//重置 管家的主人
+        this.poisonedUser = -1;//重置 被下毒的玩家
+        this.beKilledUser = -1;//重置 被小恶魔杀的玩家
+
         this.initActionOrder();
     }
     initActionOrder(){
@@ -89,7 +102,7 @@ export class Game{
         //给恶魔，爪牙和说书人发送邪恶阵营信息
         this.tellEvilInformation();
         //初始化行动顺序并开始行动
-        this.initActionOrder();
+        this.initNight();
         this.dealAction();
     }
     tellEvilInformation(){
@@ -117,6 +130,12 @@ export class Game{
     dealAction(){
         if(this.actionIndex < this.actionOrder.length){
             var curSkillUser = this.actionOrder[this.actionIndex++];
+            if(this.room.seats[curSkillUser].character === "渡鸦守护者"){
+                if(this.willBeExecutedUser !== curSkillUser && this.poisonedUser !== curSkillUser)
+                    this.room.seats[curSkillUser].useSkill();
+                else
+                    this.dealAction();
+            }
             if(!this.room.seats[curSkillUser].isAlive)
                 this.dealAction();
             else
@@ -193,6 +212,8 @@ export class Game{
             "body":body
         });
         else if(isLazy){
+            //["僧侣","管家","投毒者"]
+            this.dealUserSkill(body);
             //处理daysLog
             this.logAndNotify({
                 "type":"information_proactive",
@@ -200,8 +221,36 @@ export class Game{
             },"homeOwner");
         }
     }
+    dealUserSkill(body){
+        var seatNumber = body.seat_number;
+        var character = body.character;
+        //["僧侣","管家","投毒者"]
+        switch (character){
+            case "僧侣":
+                if(this.poisonedUser !== seatNumber)
+                    this.monkProtect = body.argument.protect_user;
+                break;
+            case "管家":
+                if(this.poisonedUser !== seatNumber)
+                    this.butlerMaster = body.argument.master_user;
+                break;
+            case "投毒者":
+                this.poisonedUser = body.argument.poison_user;
+                break;
+            case "小恶魔":
+                if(body.information.state === "confirm" || body.information.state === "die_for_mayor")
+                    this.room.seats[body.information.kill_user].beKilled();//这里是由说书人决定弹到谁或者确认谁死亡
+                else if(body.information.state === "imp_change"){
+                    this.room.seats[body.information.kill_user].beKilled();//同上
+                    this.room.seats[body.information.new_imp].becomeImp();//同上
+                    if(this.actionOrder[this.actionOrder.length-1] === body.information.new_imp)//如果新恶魔是间谍（在行动顺序的最后）
+                        this.actionOrder = this.actionOrder.slice(0,-1);
+                }
+                break;
+        }
+    }
     sendProactiveInformation(body){
-        //只有可能是占卜师和渡鸦守护者
+        //只有可能是占卜师，渡鸦守护者和小恶魔
         var roleName = body.character;
         var userSeatNumber = this.isExistAndAlive(roleName);
         if(userSeatNumber!==-1){
@@ -214,6 +263,7 @@ export class Game{
                 "body":body
             },"homeOwner");
         }
+        this.dealUserSkill(body);
         this.dealAction();
     }
     dealNominate(body){
@@ -226,11 +276,13 @@ export class Game{
         if(this.room.seats[toUser].character === "圣女" && this.isVirginValid){
             this.isVirginValid = false;
             if(this.room.seats[fromUser].isTownsfolk() && this.poisonedUser !== fromUser){
-                this.execute((toUser));
+                this.willBeExecutedUser = toUser;
+                this.startNight();
                 return;
             }
         }
         //通知所有人开始提名投票
+        this.stage = Stage.voting;
         this.logAndNotify({
                 "type":"vote_start",
                 "body":{
@@ -245,17 +297,27 @@ export class Game{
 
     }
     initNominate(fromUser,toUser){
-
-        //todo:进行提名和被提名限制
+        //进行提名和被提名限制
+        this.room.seats[fromUser].canNominate = false;
+        this.room.seats[toUser].canBeNominate = false;
         //todo:设置投票发起者
         this.nominatingUser = toUser;
-        this.vote = Array.from({length:this.room.maxPeople});
+        this.voteList = Array.from({length:this.room.maxPeople});
     }
     initExecute(){
         this.maxVote = -1;
         this.voteList = Array.from({length:this.room.maxPeople});
     }
-    execute(userNumber){
+    execute(){
+        var userNumber = this.willBeExecutedUser;
+        if(userNumber === -1){
+            //判断市长胜利
+            var mayorNumber = this.isExistAndAlive("市长");
+            var cl = this.livingCharacters();
+            if(cl.includes("市长") && cl.length === 3 && mayorNumber !== this.poisonedUser)
+                this.game_over("justice","市长技能发动，游戏结束")
+            return;
+        }
         this.room.seats[userNumber].die();
         //通知所有人
         this.logAndNotify({
@@ -267,6 +329,8 @@ export class Game{
             },
             "all"
         );
+        this.willBeExecutedUser = -1;
+        this.executedUser = userNumber;
         //如果是圣徒，游戏结束
         if(this.room.seats[userNumber].character === "圣徒" && this.poisonedUser !== userNumber){
             this.game_over("evil","圣徒被处决")
@@ -286,8 +350,6 @@ export class Game{
             this.game_over("evil","场上仅有两人且恶魔在场");
         else if(cList.filter((u)=>{return Global.townsfolk.includes(u) || Global.outsiders.includes(u)}) === 0){
             this.game_over("evil","正义阵营全部阵亡");
-        }else{
-            this.startNight();
         }
     }
     dealSecretwoman(){
@@ -321,13 +383,18 @@ export class Game{
     endNominate(){
         var voteCount = 0;
         var result = "";
-        for(var i=0;i<this.vote.length;i++)
-            if(this.vote[i] === true)
+        for(var i=0;i<this.voteList.length;i++)
+            if(this.voteList[i] === true){
+                if(this.room.seats[i].character === "管家" && this.room.seats[i].isAlive){
+                    if(this.butlerMaster != -1 && this.voteList[this.butlerMaster])
+                        voteCount ++;
+                    else continue;
+                }
+
                 voteCount ++;
+            }
         this.voteList[this.nominatingUser] = voteCount;
         if(voteCount < this.livingNumbers()/2 || voteCount < this.maxVote){
-            //投票不成功
-            //通知所有人
             result = "fail";
         }
         else if(voteCount > this.maxVote){//得票最高，上处刑台
@@ -339,7 +406,8 @@ export class Game{
             result = "draw";
 
         }
-        //通知所有人
+        //log并通知所有人
+        this.stage = Stage.freeTalking;
         this.logAndNotify({
             "type":"vote_end",
             "body":{
@@ -348,14 +416,13 @@ export class Game{
                 "result":result
             }
         },"all");
-        this.initNominate();
     }
     dealVote(body){
         var index = body.from_seat_number;
-        this.vote[index] = body.result;
+        this.voteList[index] = body.result;
         //死人票用过了则不能再投票 防bug
         if(body.result === true && this.room.seats[index].canDeadVote === false)
-            this.vote[index] = false;
+            this.voteList[index] = false;
         else if(body.result === true
             && this.room.seats[index].isAlive === false
             && this.room.seats[index].canDeadVote === true){
@@ -424,13 +491,36 @@ export class Game{
         },"all");
     }
     startNight(){
-        //todo:开始新的晚上
-        //todo:处决玩家，初始化死人票
+        //处决
+        this.execute();
+        //开始新的晚上
         this.initNight();
+        //通知夜晚开始
+        this.notifyAll({
+            "verb":"night_start",
+        })
+        //执行技能
+        this.initActionOrder();
+        this.dealAction();
     }
     startNextDay(){
+        this.days++;
         //进入下一天
         this.initDay();
+        //通知白天开始
+        this.notifyAll({
+            "verb":"day_start",
+        })
+        //通报被杀的玩家是谁
+        if(this.executedUser !== -1){
+            this.notifyAll({
+                "verb":"some_one_died_in_night",
+                "body":{
+                    "seat_number":this.executedUser
+                }
+
+            });
+        }
     }
     sendSpyInformation(){
         var user = this.isExistAndAlive("间谍");
@@ -458,6 +548,10 @@ export class Game{
             return;
         else if(typeof notify === "number")
             !this.room.seats[notify].notify(data);
+
+    }
+    dieForMayor(body){
+        var userNumber = body.user;
 
     }
 }

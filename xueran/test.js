@@ -212,7 +212,14 @@ var json = {
 // 男爵,Baron
 // 小恶魔,Imp
 var argument = {
-    "user":1
+    "verb":"proactive_information_need",
+    "body":{
+        "seat_number":1,
+        "character":"小恶魔",
+        "argument":{
+            "kill_user":1
+        }
+    }
 }
 
 ////提名json
@@ -230,5 +237,28 @@ var json = {
         "from_seat_number":1,
         "to_seat_number":2,
         "result":true || false
+    }
+}
+
+//替市长死去
+var json = {
+    "verb":"die_for_mayor",
+    "body":{
+        "user":1
+    }
+}
+//// 客户端（说书人）需要确认小恶魔刀的人,
+// 市长的技能放在客户端实现
+// 小恶魔换人也在客户端实现
+var information = {
+    "verb":"proactive_information_give",
+    "body":{
+        "seat_number":1,
+        "character":"小恶魔",
+        "information":{
+            "state":"die_for_mayor"||"imp_change"||"confirm",
+            "kill_user":1,
+            "new_imp":3
+        }
     }
 }
