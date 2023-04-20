@@ -40,12 +40,7 @@ export class User{
         };
         return ans;
     }
-    notifyMembersChange(user,isMemberInc = true){
-        this.client.send(JSON.stringify({
-            verb:isMemberInc?"someone_join_room":"someone_exit_room",
-            user:user.toJSON()
-        }));
-    }
+
     notifyOwnerChange(user){
         this.client.send(JSON.stringify({
             verb:"home_owner_changed",
@@ -77,6 +72,7 @@ export class User{
         console.log(this.toString() + " doesn't in a room");
     }
     notify(data){
+        console.log(this.name+"收到了信息:")
         this.client.send(JSON.stringify(data));
     }
     startGame(){

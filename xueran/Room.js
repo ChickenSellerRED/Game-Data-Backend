@@ -1,6 +1,7 @@
 import {User} from "./User.js";
 import {Global} from "./Global.js";
 import {Game} from "./Game.js";
+import {fakeClient} from "./test/fakeClient.js";
 
 export class Room{
     homeOwner;
@@ -17,20 +18,27 @@ export class Room{
     demons;
     game
 
-    constructor(homeOwner, maxpeople, name) {
+    constructor(homeOwner, maxPeople, name) {
         this.homeOwner = homeOwner;
         this.curPeople = 1;
-        this.maxPeople = maxpeople;
+        this.maxPeople = maxPeople;
+        this.seats = Array.from({length:maxPeople});
         this.name = name;
         //todo:roomNumber赋值时要查重
         //todo:roomNumber取随机值
         // this.roomNumber = Math.ceil(Math.random()*10000);
         this.roomNumber = 2018
         this.members = [];
-        this.seats = Array(maxpeople)
+        this.seats = Array(maxPeople)
         Global.num2rooms.set(this.roomNumber,this);
 
         //todo:将room注册到global的roomlist中
+
+        //新建5个假人加进来
+        for(var i=0;i<5;i++){
+            var u = new User("玩家#"+i,"images/avatar_0.png","uuid_"+i,new fakeClient());
+            u.joinRoom(this);
+        }
 
     }
 
@@ -60,15 +68,10 @@ export class Room{
             }));
         }
         else{
-            this.members.forEach((u)=>{
-                u.notifyMembersChange(user)
-            })
+
             this.members.push(user);
             user.curRoom = this;
-            user.notify(JSON.stringify({
-                verb:"join_room_success",
-                room:this.toJSON()
-            }));
+            this.takeASeatAndNotify(user);
         }
     }
     toString(){
@@ -87,9 +90,14 @@ export class Room{
             return;
         }
         this.members = this.members.filter((u)=>!u.equals(user));
-            this.members.forEach((u)=>{
-            u.notifyMembersChange(user,false);
-        })
+        this.seats[user.seatNumber] = undefined;
+        this.notifyAll({
+            "verb":"someone_exited",
+            "body":{
+                "user":user.toJSON(),
+                "seat_number":user.seatNumber
+            }
+        });
     }
 
     shuffleCharacters(townsfolk,outsiders,minions,demons){
@@ -119,11 +127,66 @@ export class Room{
                 "verb":"game_started"
             })
         });
+        this.homeOwner.notify({
+            "verb":"game_started"
+        });
         this.shuffleCharacters(
             json.body.townsfolk,
             json.body.outsiders,
             json.body.minions,
             json.body.demons
         );
+    }
+    takeASeatAndNotify(user){
+        this.members.push(user);
+        var newIndex;
+        for(var i=0;i<this.seats.length;i++){
+            if(this.seats[i] === undefined){
+                newIndex = i;
+                this.seats[i] = user;
+                user.seatNumber = i;
+                break;
+            }
+        }
+        this.seats.forEach((u,index)=>{
+            if(u === undefined)
+                return;
+            if(index === newIndex){
+                u.notify({
+                    "verb":"join_room_success",
+                    "body":{
+                        "seat_number":newIndex
+                    }
+                })
+            }else{
+                u.notify({
+                    "verb":"someone_joined",
+                    "body":{
+                        "user":user.toJSON(),
+                        "seat_number":newIndex,
+                    }
+                })
+            }
+        });
+    }
+    notifyAll(data){
+        this.homeOwner.notify(data);
+        this.members.forEach((u)=>{
+            u.notify(data);
+        })
+    }
+    switchSeats(seatA,seatB){
+        var u = this.seats[seatA];
+        this.seats[seatA] = this.seats[seatB];
+        this.seats[seatB] = u;
+        this.members.forEach((u)=>{
+            u.notify({
+                "verb":"switch_seats",
+                "body":{
+                    "seatA":seatA,
+                    "seatB":seatB
+                }
+            })
+        })
     }
 }

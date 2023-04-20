@@ -2,7 +2,7 @@ export class Global{
     static num2rooms;
     static ws2users;
     static roles;
-    static roles2Func = Map();
+    static roles2Func = new Map();
     static passiveCharacterList = [];
     static proactiveCharacterList = [];
     static lazyProactiveCharacterList = [];
