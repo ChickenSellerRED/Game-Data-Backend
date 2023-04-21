@@ -44,7 +44,9 @@ export class Game{
         this.recluseFakeCharacter = body.recluseFakeCharacter;
 
         this.stage = Stage.night;
-        this.initNight();
+    }
+
+    start(){
         this.startFirstNight();
     }
 
@@ -69,7 +71,6 @@ export class Game{
         this.butlerMaster = -1;//重置 管家的主人
         this.poisonedUser = -1;//重置 被下毒的玩家
         this.beKilledUser = -1;//重置 被小恶魔杀的玩家
-
         this.initActionOrder();
     }
     initActionOrder(){
@@ -95,9 +96,11 @@ export class Game{
         }
         this.actionOrder.push(this.isExistAndAlive("间谍"));
         this.actionOrder = this.actionOrder.filter((e)=>{return e!==-1});
+        console.log(this.actionOrder);
     }
     startFirstNight(){
         //给每名玩家发送对应的身份
+        this.days = 0;
         this.tellCharacters();
         //给恶魔，爪牙和说书人发送邪恶阵营信息
         this.tellEvilInformation();
@@ -108,7 +111,7 @@ export class Game{
     tellEvilInformation(){
         var evil = [];
         this.room.seats.forEach((u,index)=>{
-            if(Global.evilCharacter.contains(u.character)){
+            if(Global.evilCharacter.includes(u.character)){
                 evil.push({
                     "seatNumber":index,
                     "character":u.character
@@ -116,7 +119,7 @@ export class Game{
             }
         });
         this.room.seats.forEach((u,index)=>{
-            if(Global.evilCharacter.contains(u.character)){
+            if(Global.evilCharacter.includes(u.character)){
                 u.notify({
                     "verb":"evil_users",
                     "body":{
@@ -130,11 +133,16 @@ export class Game{
     dealAction(){
         if(this.actionIndex < this.actionOrder.length){
             var curSkillUser = this.actionOrder[this.actionIndex++];
+            // console.log("actionIndex: ",this.actionIndex-1);
+            // console.log("curSkillUser: ",this.room.seats[curSkillUser].name);
+            // console.log("character: ",this.room.seats[curSkillUser].character);
+            // console.log("alive: ",this.room.seats[curSkillUser].isAlive);
             if(this.room.seats[curSkillUser].character === "渡鸦守护者"){
-                if(this.willBeExecutedUser !== curSkillUser && this.poisonedUser !== curSkillUser)
+                if(this.willBeExecutedUser === curSkillUser)
                     this.room.seats[curSkillUser].useSkill();
                 else
                     this.dealAction();
+                return;
             }
             if(!this.room.seats[curSkillUser].isAlive)
                 this.dealAction();
@@ -172,13 +180,7 @@ export class Game{
         }
         )
     }
-    contactRole(roleName){
-        var userSeatNumber = this.isExistAndAlive(roleName);
-        if(userSeatNumber !== -1){
-           this.room.seats[userSeatNumber].useSkill();
-        }
 
-    }
     isExistAndAlive(role){
         for(var i=0;i<this.room.seats.length;i++){
             var user = this.room.seats[i];
@@ -219,6 +221,7 @@ export class Game{
                 "type":"information_proactive",
                 "body":body
             },"homeOwner");
+            this.dealAction();
         }
     }
     dealUserSkill(body){
@@ -500,7 +503,6 @@ export class Game{
             "verb":"night_start",
         })
         //执行技能
-        this.initActionOrder();
         this.dealAction();
     }
     startNextDay(){

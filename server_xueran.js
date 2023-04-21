@@ -2,6 +2,7 @@ import { WebSocketServer } from 'ws';
 import {User} from './xueran/User.js';
 import {Room} from './xueran/Room.js';
 import {Global} from './xueran/Global.js'
+import {fakeClient} from "./xueran/test/fakeClient.js";
 
 Global.init();
 const xueran = new WebSocketServer({ port: 3000 });
@@ -29,6 +30,11 @@ xueran.on('connection', function connection(ws,req) {
                     verb:"create_room_success",
                     room:curRoom.toJSON()
                 }));
+                //新建5个假人加进来
+                for(var i=0;i<5;i++){
+                    var u = new User("玩家#"+i,"images/avatar_0.png","uuid_"+i,new fakeClient());
+                    u.joinRoom(curRoom);
+                }
                 console.log(curRoom.roomNumber)
                 break;
             case "join_room":
@@ -45,8 +51,14 @@ xueran.on('connection', function connection(ws,req) {
             case "exit_room":
                 curUser.exitRoom();
                 break;
+            case "switch_seats":
+                curUser.curRoom.switchSeats(data.body.seatA,data.body.seatB);
+                break;
+            case "check_start_game":
+                curUser.checkGameCanStart(data);
+                break;
             case "start_game":
-                curUser.curRoom.startGame(data);
+                curUser.curRoom.startGame(data.body);
                 break;
             case "passive_information_give":
                 curUser.curRoom.game.sendPassiveInformation(data.body);
@@ -68,8 +80,10 @@ xueran.on('connection', function connection(ws,req) {
                 break;
             case "die_for_mayor":
                 curUser.curRoom.game.dieForMayor(body);
+                break;
             case "end_night":
                 curUser.curRoom.game.startNextDay();
+                break;
 
             default: break;
         }

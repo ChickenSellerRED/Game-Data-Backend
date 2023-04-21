@@ -72,25 +72,41 @@ export class User{
         console.log(this.toString() + " doesn't in a room");
     }
     notify(data){
-        console.log(this.name+"收到了信息:")
+        console.log(this.name+"收到了信息:"+JSON.stringify(data,null,2))
         this.client.send(JSON.stringify(data));
     }
-    startGame(){
+    checkGameCanStart(){
         if(this.curRoom == null){
             this.notify({
                 "verb":"start_game_fail",
-                "reason":"You are not in a room"
+                "body": {
+                    "reason": "你不在任何一个房间里"
+                }
             })
             return;
         }
         if(!this.equals(this.curRoom.homeOwner)){
             this.notify({
                 "verb":"start_game_fail",
-                "reason":"You are not homeOwner"
+                "body": {
+                    "reason": "你不是房主哦"
+                }
             })
             return;
         }
-        this.curRoom.startGame();
+        if(!this.curRoom.isFull()){
+            this.notify({
+                "verb":"start_game_fail",
+                "body":{
+                    "reason":"房间没满"
+                }
+            })
+            return;
+        }
+        this.notify({
+            "verb":"game_can_start",
+            "body":{}
+        })
     }
 
     useSkill(){
@@ -110,9 +126,9 @@ export class User{
         var role = this.character;
         if(role === "酒鬼")
             role = this.fakeCharacter;
-        if(role in Global.passiveCharacterList)
+        if(Global.passiveCharacterList.includes(role))
             return "passive";
-        else if(role in Global.proactiveCharacterList)
+        else if(Global.proactiveCharacterList.includes(role))
             return "proactive";
         else return "other";
     }

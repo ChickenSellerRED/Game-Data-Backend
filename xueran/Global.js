@@ -41,7 +41,7 @@ export class Global{
         this.passiveCharacterList = ["洗衣妇","图书管理员","调查员","厨师","共情者","送葬者"];
         this.proactiveCharacterList = ["占卜师","僧侣","管家","投毒者","渡鸦守护者","小恶魔"];
         this.lazyProactiveCharacterList = ["僧侣","管家","投毒者"];
-        this.evilCharacter = ["小恶魔","间谍","红唇女郎","男爵"];
+        this.evilCharacter = ["小恶魔","间谍","红唇女郎","男爵","投毒者"];
         this.townsfolk = ["洗衣妇","图书管理员","调查员","厨师","共情者","送葬者","占卜师","僧侣","渡鸦守护者","圣女","市长","士兵","杀手"]
         this.outsiders = ["隐士","圣徒","酒鬼","管家"]
     }
