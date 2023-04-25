@@ -151,7 +151,8 @@ export class Game{
         }
         else{
             this.room.homeOwner.notify({
-                "verb":"night_action_over"
+                "verb":"night_action_over",
+                "body":{}
             })
         }
     }
@@ -257,10 +258,11 @@ export class Game{
         var roleName = body.character;
         var userSeatNumber = this.isExistAndAlive(roleName);
         if(userSeatNumber!==-1){
-            this.room.seats[userSeatNumber].notify({
-                "verb":"proactive_information_give",
-                "body":body
-            });
+            if(roleName!=="小恶魔")
+                this.room.seats[userSeatNumber].notify({
+                    "verb":"proactive_information_give",
+                    "body":body
+                });
             this.logAndNotify({
                 "type":"information_proactive",
                 "body":body
@@ -433,7 +435,9 @@ export class Game{
             //通知所有人有人用了死人票
             this.notifyAll({
                 "verb":"someone_use_deadvote",
-                "seat_number":index
+                "body":{
+                    "seat_number":index
+                }
             });
         }
         this.notifyAll({
@@ -501,6 +505,7 @@ export class Game{
         //通知夜晚开始
         this.notifyAll({
             "verb":"night_start",
+            "body":{}
         })
         //执行技能
         this.dealAction();
@@ -512,6 +517,7 @@ export class Game{
         //通知白天开始
         this.notifyAll({
             "verb":"day_start",
+            "body":{}
         })
         //通报被杀的玩家是谁
         if(this.executedUser !== -1){

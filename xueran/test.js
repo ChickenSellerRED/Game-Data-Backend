@@ -256,7 +256,7 @@ var information = {
         "seat_number":1,
         "character":"小恶魔",
         "information":{
-            "state":"die_for_mayor"||"imp_change"||"confirm",
+            "state":"imp_change"||"confirm",
             "kill_user":1,
             "new_imp":3
         }
