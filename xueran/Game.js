@@ -44,6 +44,7 @@ export class Game{
         this.recluseFakeCharacter = body.recluseFakeCharacter;
 
         this.stage = Stage.night;
+        this.daysLog = [];
     }
 
     start(){

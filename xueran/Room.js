@@ -72,6 +72,7 @@ export class Room{
         if(user.equals(this.homeOwner)){
             //如果是房主退出
             this.members.forEach((u)=>{
+                u.curRoom = null;
                 u.notify({
                     "verb":"room_close",
                     "reason":"Home Owner closed the room"
@@ -105,10 +106,11 @@ export class Room{
             characterList[j] = tem;
         }
         this.characters = characterList;
+        this.characters = ["洗衣妇","图书管理员","调查员","厨师","共情者","送葬者","占卜师","僧侣","渡鸦守护者","小恶魔","投毒者","间谍"];
         this.homeOwner.notify({
             "verb":"character_assign_result",
             "body":{
-                "characterList":characterList
+                "characterList":this.characters
             }
         })
 

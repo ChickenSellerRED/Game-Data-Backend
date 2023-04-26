@@ -20,6 +20,7 @@ xueran.on('connection', function connection(ws,req) {
     ws.on('message', function message(data) {
         data = JSON.parse(data);
         console.log(data)
+        var body = data.body;
         // var curUser = Global.ws2users.get(ws);
         // console.log(curUser)
         switch (data.verb){
@@ -30,8 +31,8 @@ xueran.on('connection', function connection(ws,req) {
                     verb:"create_room_success",
                     room:curRoom.toJSON()
                 }));
-                //新建5个假人加进来
-                for(var i=0;i<5;i++){
+                //新建11个假人加进来
+                for(var i=0;i<11;i++){
                     var u = new User("玩家#"+i,"images/avatar_0.png","uuid_"+i,new fakeClient());
                     u.joinRoom(curRoom);
                 }
@@ -84,6 +85,8 @@ xueran.on('connection', function connection(ws,req) {
             case "end_night":
                 curUser.curRoom.game.startNextDay();
                 break;
+            case "test_root":
+                curUser.curRoom.homeOwner.notify(body);
 
             default: break;
         }
